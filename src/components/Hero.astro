@@ -1,0 +1,83 @@
+---
+import { site } from "../data/site";
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="globe-stage" aria-hidden="true">
+    <svg class="globe-fallback" viewBox="0 0 600 600" fill="none">
+      <g stroke="currentColor" opacity=".5">
+        <circle cx="300" cy="300" r="230" />
+        <ellipse cx="300" cy="300" rx="170" ry="230" />
+        <ellipse cx="300" cy="300" rx="80" ry="230" />
+        <ellipse cx="300" cy="300" rx="230" ry="80" />
+        <ellipse cx="300" cy="300" rx="230" ry="170" />
+        <path d="M70 300h460M300 70v460" />
+      </g>
+      <circle cx="410" cy="180" r="5" fill="currentColor" />
+    </svg>
+    <div id="globe-canvas"></div>
+    <span class="globe-coordinate mono">
+      39.90° N &nbsp; 116.40° E<br />
+      <span>BEIJING, CN</span>
+    </span>
+  </div>
+  <div class="container hero-content">
+    <p class="eyebrow">
+      <span class="status-dot"></span> RENDERING · MODELING · GIS
+    </p>
+    <h1 id="hero-title">
+      楚骁男
+      <span lang="en">
+        Chu Xiaonan<span class="accent">.</span>
+      </span>
+    </h1>
+    <p class="hero-role">{site.title}</p>
+    <p class="hero-org">
+      {site.organization}
+      <span lang="en">{site.organizationEn}</span>
+    </p>
+    <div class="hero-actions">
+      <a class="button primary" href="/projects/">
+        浏览项目 <span>Explore projects ↗</span>
+      </a>
+      <a class="text-link" href={site.github}>
+        GitHub ↗
+      </a>
+    </div>
+  </div>
+  <div class="hero-bottom container mono">
+    <span>FRONT-END ENGINEERING / BEIJING</span>
+    <a href="#intro">
+      向下探索 <span aria-hidden="true">↓</span>
+    </a>
+  </div>
+</section>
+<script>
+  const host = document.querySelector<HTMLElement>("#globe-canvas");
+  if (host && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let cancelled = false;
+    let dispose: (() => void) | undefined;
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        try {
+          const { initGlobe } = await import("../scripts/globe");
+          if (!cancelled) dispose = initGlobe(host);
+        } catch {
+          /* Static globe remains visible. */
+        }
+      },
+      { rootMargin: "100px" },
+    );
+    observer.observe(host);
+    const cleanup = () => {
+      cancelled = true;
+      observer.disconnect();
+      dispose?.();
+    };
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
+    window.addEventListener("pagehide", cleanup, { once: true });
+  }
+</script>

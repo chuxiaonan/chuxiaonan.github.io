@@ -1,0 +1,31 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostList from "../../components/PostList.astro";
+import { getPosts } from "../../data/posts";
+const posts = await getPosts();
+---
+
+<Base
+  title="博客 Blog"
+  description="楚骁男的技术文章与笔记，关注渲染、建模、GIS 与前端工程。"
+>
+  <div class="container page-content">
+    <header class="page-heading">
+      <p class="eyebrow">WRITING / TECHNICAL NOTES</p>
+      <h1>
+        博客<span class="accent">。</span>
+        <span lang="en">Blog & notes</span>
+      </h1>
+      <p>
+        关于渲染、建模、GIS 与前端工程的记录。
+        <span class="secondary-line" lang="en">
+          Notes on rendering, modeling, GIS, and front-end engineering.
+        </span>
+      </p>
+      <a class="text-link" href="/rss.xml">
+        订阅 RSS ↗
+      </a>
+    </header>
+    <PostList posts={posts} />
+  </div>
+</Base>

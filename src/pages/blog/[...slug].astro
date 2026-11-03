@@ -1,0 +1,55 @@
+---
+import { render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { getPosts, formatDate } from "../../data/posts";
+export async function getStaticPaths() {
+  return (await getPosts()).map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Base
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+>
+  <article class="container article-wrap" lang={post.data.lang}>
+    <a class="text-link back-link" href="/blog/">
+      ← 返回博客 / All notes
+    </a>
+    <header class="article-header">
+      <p class="eyebrow">TECHNICAL NOTE {post.data.draft && " / DRAFT"}</p>
+      <h1>{post.data.title}</h1>
+      <p>{post.data.description}</p>
+      <div class="article-meta mono">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {formatDate(post.data.pubDate)}
+        </time>
+        {post.data.updatedDate && (
+          <span>
+            更新 / Updated{" "}
+            <time datetime={post.data.updatedDate.toISOString()}>
+              {formatDate(post.data.updatedDate)}
+            </time>
+          </span>
+        )}
+      </div>
+      <div class="tags">
+        {post.data.tags.map((tag) => (
+          <span>{tag}</span>
+        ))}
+      </div>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
