@@ -1,44 +1,58 @@
-import * as THREE from "three";
+// Import source modules so unused renderer exports and scene types can be removed.
+import { WebGLRenderer } from "three/src/renderers/WebGLRenderer.js";
+import { Scene } from "three/src/scenes/Scene.js";
+import { PerspectiveCamera } from "three/src/cameras/PerspectiveCamera.js";
+import { Group } from "three/src/objects/Group.js";
+import { LineBasicMaterial } from "three/src/materials/LineBasicMaterial.js";
+import { PointsMaterial } from "three/src/materials/PointsMaterial.js";
+import { Vector3 } from "three/src/math/Vector3.js";
+import { Line } from "three/src/objects/Line.js";
+import { BufferGeometry } from "three/src/core/BufferGeometry.js";
+import { Points } from "three/src/objects/Points.js";
+import { MeshBasicMaterial } from "three/src/materials/MeshBasicMaterial.js";
+import { Mesh } from "three/src/objects/Mesh.js";
+import { SphereGeometry } from "three/src/geometries/SphereGeometry.js";
+import { degToRad, clamp } from "three/src/math/MathUtils.js";
 
 export function initGlobe(host: HTMLElement): () => void {
-  const renderer = new THREE.WebGLRenderer({
+  const renderer = new WebGLRenderer({
     alpha: true,
     antialias: true,
     powerPreference: "low-power",
   });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 0);
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  const scene = new Scene();
+  const camera = new PerspectiveCamera(36, 1, 0.1, 100);
   camera.position.z = 4.4;
-  const globe = new THREE.Group();
+  const globe = new Group();
   globe.rotation.set(0.15, -0.65, -0.15);
   scene.add(globe);
   const small = matchMedia("(max-width: 700px)").matches;
   const detail = small ? 48 : 96;
-  const lineMaterial = new THREE.LineBasicMaterial({
+  const lineMaterial = new LineBasicMaterial({
     color: 0x70bca5,
     transparent: true,
     opacity: 0.3,
   });
-  const pointMaterial = new THREE.PointsMaterial({
+  const pointMaterial = new PointsMaterial({
     color: 0xb4f1da,
     size: small ? 0.012 : 0.009,
     transparent: true,
     opacity: 0.8,
   });
   const toVector = (lat: number, lon: number, radius = 1.25) => {
-    const phi = THREE.MathUtils.degToRad(lat),
-      theta = THREE.MathUtils.degToRad(lon);
-    return new THREE.Vector3(
+    const phi = degToRad(lat),
+      theta = degToRad(lon);
+    return new Vector3(
       radius * Math.cos(phi) * Math.sin(theta),
       radius * Math.sin(phi),
       radius * Math.cos(phi) * Math.cos(theta),
     );
   };
-  const line = (points: THREE.Vector3[], material = lineMaterial) => {
-    const object = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(points),
+  const line = (points: Vector3[], material = lineMaterial) => {
+    const object = new Line(
+      new BufferGeometry().setFromPoints(points),
       material,
     );
     globe.add(object);
@@ -57,7 +71,7 @@ export function initGlobe(host: HTMLElement): () => void {
       ),
     );
   }
-  const points: THREE.Vector3[] = [];
+  const points: Vector3[] = [];
   // A uniformly sampled field gives the sphere a technical point-cloud surface.
   const count = small ? 750 : 1800;
   for (let i = 0; i < count; i++) {
@@ -65,7 +79,7 @@ export function initGlobe(host: HTMLElement): () => void {
     const angle = i * Math.PI * (3 - Math.sqrt(5));
     const radius = Math.sqrt(1 - y * y);
     points.push(
-      new THREE.Vector3(
+      new Vector3(
         Math.cos(angle) * radius,
         y,
         Math.sin(angle) * radius,
@@ -73,17 +87,14 @@ export function initGlobe(host: HTMLElement): () => void {
     );
   }
   globe.add(
-    new THREE.Points(
-      new THREE.BufferGeometry().setFromPoints(points),
-      pointMaterial,
-    ),
+    new Points(new BufferGeometry().setFromPoints(points), pointMaterial),
   );
-  const accentMaterial = new THREE.LineBasicMaterial({
+  const accentMaterial = new LineBasicMaterial({
     color: 0xc0f7dd,
     transparent: true,
     opacity: 0.75,
   });
-  const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xcaffdf });
+  const markerMaterial = new MeshBasicMaterial({ color: 0xcaffdf });
   const beijing = toVector(39.9, 116.4);
   // Abstract connections from Beijing; these are visual elements, not project locations.
   for (const [lat, lon] of [
@@ -103,17 +114,11 @@ export function initGlobe(host: HTMLElement): () => void {
       }),
       accentMaterial,
     );
-    const marker = new THREE.Mesh(
-      new THREE.SphereGeometry(0.018, 8, 8),
-      markerMaterial,
-    );
+    const marker = new Mesh(new SphereGeometry(0.018, 8, 8), markerMaterial);
     marker.position.copy(target);
     globe.add(marker);
   }
-  const marker = new THREE.Mesh(
-    new THREE.SphereGeometry(0.028, 12, 12),
-    markerMaterial,
-  );
+  const marker = new Mesh(new SphereGeometry(0.028, 12, 12), markerMaterial);
   marker.position.copy(beijing);
   globe.add(marker);
   host.append(renderer.domElement);
@@ -180,6 +185,16 @@ export function initGlobe(host: HTMLElement): () => void {
     if (!width || !height) return;
     renderer.setSize(width, height);
     camera.aspect = width / height;
+    // Fit the outermost connection arc (radius 1.48) in the narrower
+    // field of view, with padding for points and pointer parallax.
+    const halfVerticalFov = degToRad(camera.fov / 2);
+    const halfHorizontalFov = Math.atan(
+      Math.tan(halfVerticalFov) * camera.aspect,
+    );
+    camera.position.z = Math.max(
+      4.4,
+      1.56 / Math.sin(Math.min(halfVerticalFov, halfHorizontalFov)),
+    );
     camera.updateProjectionMatrix();
     resume();
   });
@@ -203,7 +218,7 @@ export function initGlobe(host: HTMLElement): () => void {
     if (motion.matches) return;
     if (dragging) {
       globe.rotation.y += (event.clientX - lastX) * 0.005;
-      globe.rotation.x = THREE.MathUtils.clamp(
+      globe.rotation.x = clamp(
         globe.rotation.x + (event.clientY - lastY) * 0.005,
         -1.1,
         1.1,
@@ -250,9 +265,9 @@ export function initGlobe(host: HTMLElement): () => void {
     renderer.domElement.removeEventListener("webglcontextlost", contextLost);
     scene.traverse((object) => {
       if (
-        object instanceof THREE.Mesh ||
-        object instanceof THREE.Line ||
-        object instanceof THREE.Points
+        object instanceof Mesh ||
+        object instanceof Line ||
+        object instanceof Points
       )
         object.geometry.dispose();
     });

@@ -328,7 +328,7 @@ nav a[aria-current="page"]:after {
 }
 .globe-stage {
   position: absolute;
-  width: 660px;
+  width: min(660px, calc(50% - 20px));
   height: 620px;
   left: calc(50% - 5px);
   top: 7px;
@@ -913,7 +913,7 @@ dd {
   }
   .globe-stage {
     left: 45%;
-    width: 600px;
+    width: calc(55% - 20px);
   }
   .intro {
     gap: 50px;
@@ -1004,9 +1004,10 @@ dd {
     margin-bottom: 25px;
   }
   .globe-stage {
-    width: 440px;
+    width: min(440px, calc(100% - 32px));
     height: 410px;
-    left: calc(50% - 220px);
+    left: 50%;
+    transform: translateX(-50%);
     top: auto;
     bottom: 20px;
   }
