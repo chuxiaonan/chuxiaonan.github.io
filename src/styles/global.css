@@ -207,7 +207,7 @@ nav a[aria-current="page"]:after {
 }
 .hero {
   position: relative;
-  min-height: 650px;
+  min-height: 720px;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
 }
@@ -314,10 +314,11 @@ nav a[aria-current="page"]:after {
 }
 .globe-stage {
   position: absolute;
-  width: min(660px, calc(50% - 20px));
-  height: 620px;
-  left: calc(50% - 5px);
-  top: 7px;
+  width: min(780px, calc(56% - 8px));
+  height: 700px;
+  left: calc(50% - 28px);
+  top: 0;
+  overflow: visible;
 }
 .globe-fallback {
   position: absolute;
@@ -364,9 +365,6 @@ nav a[aria-current="page"]:after {
   outline: 2px solid var(--accent, #9fe8c8);
   outline-offset: 2px;
   background: color-mix(in srgb, var(--accent, #9fe8c8) 22%, transparent);
-}
-#globe-canvas {
-  position: relative;
 }
 
 .globe-coordinate {
@@ -923,8 +921,9 @@ dd {
     font-size: 53px;
   }
   .globe-stage {
-    left: 45%;
-    width: calc(55% - 20px);
+    left: 42%;
+    width: calc(58% - 12px);
+    height: 640px;
   }
   .intro {
     gap: 50px;
@@ -1015,12 +1014,12 @@ dd {
     margin-bottom: 25px;
   }
   .globe-stage {
-    width: min(440px, calc(100% - 32px));
-    height: 410px;
+    width: min(520px, calc(100% - 24px));
+    height: 460px;
     left: 50%;
     transform: translateX(-50%);
     top: auto;
-    bottom: 20px;
+    bottom: 18px;
   }
   .globe-coordinate {
     bottom: 25px;
@@ -1274,10 +1273,10 @@ a:hover { text-decoration: underline; text-underline-offset: 5px; }
   .wordmark { flex-shrink: 0; }
   nav ul { gap: 10px; }
   nav a { font-size: 13px; }
-  .hero-content { padding-top: 48px; padding-bottom: 370px; }
-  .hero { min-height: 820px; }
+  .hero-content { padding-top: 48px; padding-bottom: 420px; }
+  .hero { min-height: 880px; }
   .hero h1, .hero h1 > span { font-size: clamp(38px, 12vw, 49px); }
-  .globe-stage { height: 370px; bottom: 36px; }
+  .globe-stage { height: 430px; bottom: 28px; }
   .hero-bottom { font-size: 8px; }
   .hero-bottom > span { max-width: 58%; }
   .post-row p, .project-card p, .focus-grid p { font-size: 13px; }
@@ -1295,12 +1294,12 @@ a:hover { text-decoration: underline; text-underline-offset: 5px; }
 .project-card h3 { overflow-wrap: anywhere; }
 .project-card p + p { margin-top: 10px; }
 @media (max-width: 600px) {
-  .hero { min-height: 740px; }
-  .hero-content { padding-top: 310px; padding-bottom: 85px; }
+  .hero { min-height: 780px; }
+  .hero-content { padding-top: 340px; padding-bottom: 85px; }
   .globe-stage {
     top: 0;
     bottom: auto;
-    height: 310px;
+    height: 340px;
     width: 100%;
   }
   .globe-coordinate { bottom: 10px; right: 20px; }

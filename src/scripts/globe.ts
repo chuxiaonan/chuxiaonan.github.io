@@ -382,7 +382,7 @@ export function initGlobe(host: HTMLElement): () => void {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    scale = Math.max(0, (Math.min(width, height) * 0.4) / 1.5);
+    scale = Math.max(0, (Math.min(width, height) * 0.46) / 1.5);
     draw();
     resume();
   });
