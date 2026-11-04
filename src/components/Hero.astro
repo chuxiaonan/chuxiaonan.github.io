@@ -4,8 +4,8 @@ import { site } from "../data/site";
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="hero-grid" aria-hidden="true"></div>
-  <div class="globe-stage" aria-hidden="true">
-    <svg class="globe-fallback" viewBox="0 0 600 600" fill="none">
+  <div class="globe-stage">
+    <svg class="globe-fallback" viewBox="0 0 600 600" fill="none" aria-hidden="true">
       <g stroke="currentColor" opacity=".5">
         <circle cx="300" cy="300" r="230" />
         <ellipse cx="300" cy="300" rx="170" ry="230" />
@@ -17,9 +17,9 @@ import { site } from "../data/site";
       <circle cx="410" cy="180" r="5" fill="currentColor" />
     </svg>
     <div id="globe-canvas"></div>
-    <span class="globe-coordinate mono">
-      39.90° N &nbsp; 116.40° E<br />
-      <span>BEIJING, CN</span>
+    <span class="globe-coordinate mono" id="globe-label" role="status" aria-live="polite">
+      <span id="globe-label-coord">39.90° N 116.40° E</span><br />
+      <span id="globe-label-name">北京 · BEIJING</span>
     </span>
   </div>
   <div class="container hero-content">

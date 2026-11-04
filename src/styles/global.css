@@ -344,6 +344,31 @@ nav a[aria-current="page"]:after {
   height: 100%;
   display: block;
 }
+
+.globe-city-hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+  transform: translate(-9999px, -9999px);
+}
+.globe-city-hit:focus-visible {
+  outline: 2px solid var(--accent, #9fe8c8);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--accent, #9fe8c8) 22%, transparent);
+}
+#globe-canvas {
+  position: relative;
+}
+
 .globe-coordinate {
   position: absolute;
   bottom: 40px;
