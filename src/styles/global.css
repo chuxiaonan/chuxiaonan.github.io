@@ -448,7 +448,7 @@ nav a[aria-current="page"]:after {
 }
 .focus-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   border-top: 1px solid var(--border);
 }
 .focus-grid article {
@@ -1061,7 +1061,8 @@ dd {
   .focus-grid article:nth-child(even) {
     border-right: 0;
   }
-  .focus-grid article:nth-child(n + 3) {
+  .focus-grid article:last-child {
+    grid-column: 1 / -1;
     border-bottom: 0;
   }
   .focus-number {
