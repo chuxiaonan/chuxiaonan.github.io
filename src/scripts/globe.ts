@@ -78,10 +78,11 @@ export function initGlobe(host: HTMLElement): () => void {
   for (let lon = 0; lon < 360; lon += 15)
     grid.push(Array.from({ length: 97 }, (_, i) => point((i * 180) / 96 - 90, lon)));
 
+  // Single Fibonacci lattice for the whole sphere — land vs ocean is brightness only.
   const dots: Dot[] = [];
-  const baseCount = small ? 900 : 2200;
-  for (let i = 0; i < baseCount; i++) {
-    const y = 1 - (i / (baseCount - 1)) * 2;
+  const count = small ? 1400 : 2800;
+  for (let i = 0; i < count; i++) {
+    const y = 1 - (i / (count - 1)) * 2;
     const a = i * Math.PI * (3 - Math.sqrt(5));
     const r = Math.sqrt(1 - y * y);
     const x = Math.cos(a) * r;
@@ -89,18 +90,6 @@ export function initGlobe(host: HTMLElement): () => void {
     const lat = (Math.asin(Math.max(-1, Math.min(1, y))) * 180) / Math.PI;
     const lon = (Math.atan2(x, z) * 180) / Math.PI;
     dots.push({ p: [x * 1.253, y * 1.253, z * 1.253], land: isLand(lon, lat) });
-  }
-  // Extra denser land samples so continents read clearly
-  const landStep = small ? 4 : 2.5;
-  for (let lat = -80; lat <= 80; lat += landStep) {
-    const lonStep = landStep / Math.max(0.25, Math.cos(lat * radians));
-    for (let lon = -180; lon < 180; lon += lonStep) {
-      if (!isLand(lon, lat)) continue;
-      // Deterministic thin-out (~45% keep) so continents stay readable without noise flicker
-      const keep = (((lat * 73856093) ^ (lon * 19349663)) >>> 0) % 100 < 45;
-      if (!keep) continue;
-      dots.push({ p: point(lat, lon, 1.253), land: true });
-    }
   }
 
   const origin = point(39.9, 116.4);
@@ -163,25 +152,24 @@ export function initGlobe(host: HTMLElement): () => void {
     ctx.clearRect(0, 0, width, height);
     stroke(grid, false);
 
-    // Ocean dots first (dimmer / smaller)
+    // Same lattice for ocean and land — only brightness / alpha / tiny radius differs
+    const rOcean = small ? 0.75 : 0.8;
+    const rLand = small ? 0.9 : 0.95;
     for (const { p, land } of dots) {
-      if (land) continue;
       const [x, y, z] = project(p);
-      ctx.fillStyle = light ? "#9bb8ad" : "#3d6a5c";
-      ctx.globalAlpha = z > 0 ? 0.35 : 0.08;
-      ctx.beginPath();
-      ctx.arc(x, y, small ? 0.55 : 0.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // Land dots (brighter / larger)
-    for (const { p, land } of dots) {
-      if (!land) continue;
-      const [x, y, z] = project(p);
-      ctx.fillStyle = light ? "#1f6b4f" : "#c8f7df";
-      ctx.globalAlpha = z > 0 ? 0.92 : 0.18;
-      ctx.beginPath();
-      ctx.arc(x, y, small ? 1.15 : 1.25, 0, Math.PI * 2);
-      ctx.fill();
+      if (land) {
+        ctx.fillStyle = light ? "#1f6b4f" : "#d2fbe6";
+        ctx.globalAlpha = z > 0 ? 0.95 : 0.2;
+        ctx.beginPath();
+        ctx.arc(x, y, rLand, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = light ? "#9bb8ad" : "#3a6356";
+        ctx.globalAlpha = z > 0 ? 0.28 : 0.07;
+        ctx.beginPath();
+        ctx.arc(x, y, rOcean, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     stroke(arcs, true);
