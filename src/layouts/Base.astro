@@ -20,15 +20,14 @@ const nav = [
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
       try {
         const t = localStorage.getItem("theme");
-        if (t === "light" || t === "dark")
-          document.documentElement.dataset.theme = t;
+        document.documentElement.dataset.theme = t === "light" ? "light" : "dark";
       } catch {}
     </script>
     <title>{pageTitle}</title>
@@ -121,14 +120,16 @@ const nav = [
     </footer>
     <script>
       const button = document.querySelector<HTMLButtonElement>(".theme-toggle");
+      const syncToggle = () => {
+        button?.setAttribute("aria-pressed", String(document.documentElement.dataset.theme === "light"));
+      };
+      syncToggle();
       button?.addEventListener("click", () => {
         const current =
-          document.documentElement.dataset.theme ??
-          (matchMedia("(prefers-color-scheme: light)").matches
-            ? "light"
-            : "dark");
+          document.documentElement.dataset.theme ?? "dark";
         const next = current === "dark" ? "light" : "dark";
         document.documentElement.dataset.theme = next;
+        syncToggle();
         try {
           localStorage.setItem("theme", next);
         } catch {}

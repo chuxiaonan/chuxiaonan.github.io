@@ -55,7 +55,7 @@ import { site } from "../data/site";
 </section>
 <script>
   const host = document.querySelector<HTMLElement>("#globe-canvas");
-  if (host && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (host) {
     let cancelled = false;
     let dispose: (() => void) | undefined;
     const observer = new IntersectionObserver(
