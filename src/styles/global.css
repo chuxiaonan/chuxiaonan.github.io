@@ -1264,3 +1264,18 @@ a:hover { text-decoration: underline; text-underline-offset: 5px; }
   .brand-icon { display: none; }
   nav ul { gap: 12px; }
 }
+
+.about-intro { max-width: 800px; margin-bottom: 40px; }
+.project-card h3 { overflow-wrap: anywhere; }
+.project-card p + p { margin-top: 10px; }
+@media (max-width: 600px) {
+  .hero { min-height: 740px; }
+  .hero-content { padding-top: 310px; padding-bottom: 85px; }
+  .globe-stage {
+    top: 0;
+    bottom: auto;
+    height: 310px;
+    width: 100%;
+  }
+  .globe-coordinate { bottom: 10px; right: 20px; }
+}

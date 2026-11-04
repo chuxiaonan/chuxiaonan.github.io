@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { site } from "../data/site";
+import { site, intro } from "../data/site";
 ---
 
 <Base title="关于 About">
@@ -12,6 +12,10 @@ import { site } from "../data/site";
         <span lang="en">About me</span>
       </h1>
     </header>
+    <div class="intro-copy about-intro">
+      <p>{intro.zh}</p>
+      <p lang="en">{intro.en}</p>
+    </div>
     <div class="about-layout">
       <div class="profile-symbol" aria-hidden="true">
         楚<span>CHU / XIAONAN</span>
