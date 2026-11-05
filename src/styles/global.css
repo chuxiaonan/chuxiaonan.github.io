@@ -360,6 +360,8 @@ nav a[aria-current="page"]:after {
   cursor: pointer;
   z-index: 2;
   transform: translate(-9999px, -9999px);
+  /* Pointer stays on the canvas so nearby footprint dots remain hoverable. */
+  pointer-events: none;
 }
 .globe-city-hit:focus-visible {
   outline: 2px solid var(--accent, #9fe8c8);
@@ -1546,7 +1548,12 @@ nav a,
     font-size: 13px;
   }
   .globe-hint {
-    display: none;
+    top: 10px;
+    right: 12px;
+    bottom: auto;
+    max-width: 10em;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
   }
   .archive-grid .project-art {
     height: 72px;

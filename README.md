@@ -44,7 +44,7 @@ lang: zh-CN # 可选，zh-CN 或 en，默认 zh-CN
 - `src/pages/index.astro`：首页简介、技术方向。
 - `src/pages/about.astro`：教育与个人资料。调整事实时请同步首页简介。
 - `src/styles/global.css`：配色、字体、布局；默认深色主题，也可通过导航栏按钮切换并保存到 localStorage。
-- `src/components/Hero.astro` / `src/scripts/globe.ts`：静态 SVG 与按需加载的 Canvas 2D 渲染器。北京是地理视觉锚点，其他点与弧线仅为抽象装饰，不代表项目或工作地点。
+- `src/components/Hero.astro` / `src/scripts/globe.ts`：静态 SVG 与按需加载的 Canvas 2D 渲染器。北京是常驻地。到过的城市画成足迹点；弧线只保留精选城市，或当前悬停的那一座，不代表项目或工作地点。
 
 地球支持拖动（触屏保留纵向滚动），限制像素比到 2，小屏降低细节，离屏 / 后台暂停；卸载时释放资源。支持减少动态效果偏好；Canvas 不可用时保留静态 SVG。文本无需 JavaScript 即可阅读。
 

@@ -2,13 +2,16 @@ type Point = [number, number, number];
 type Dot = { p: Point; land: boolean };
 type LonLat = [number, number];
 
+type CityKind = "hub" | "featured" | "footprint";
+
 type City = {
   id: string;
   nameZh: string;
   nameEn: string;
   lat: number;
   lon: number;
-  hub?: boolean;
+  /** Hub is home. Featured cities keep a standing arc. Footprints are dots until selected. */
+  kind: CityKind;
 };
 
 /**
@@ -49,13 +52,52 @@ const CONTINENTS: LonLat[][] = [
 ];
 
 const CITIES: City[] = [
-  { id: "beijing", nameZh: "北京", nameEn: "Beijing", lat: 39.9, lon: 116.4, hub: true },
-  { id: "london", nameZh: "伦敦", nameEn: "London", lat: 51.51, lon: -0.13 },
-  { id: "munich", nameZh: "慕尼黑", nameEn: "Munich", lat: 48.14, lon: 11.58 },
-  { id: "newyork", nameZh: "纽约", nameEn: "New York", lat: 40.71, lon: -74.01 },
-  { id: "tokyo", nameZh: "东京", nameEn: "Tokyo", lat: 35.68, lon: 139.69 },
-  { id: "shanghai", nameZh: "上海", nameEn: "Shanghai", lat: 31.23, lon: 121.47 },
-  { id: "singapore", nameZh: "新加坡", nameEn: "Singapore", lat: 1.35, lon: 103.82 },
+  { id: "beijing", nameZh: "北京", nameEn: "Beijing", lat: 39.9, lon: 116.4, kind: "hub" },
+  { id: "london", nameZh: "伦敦", nameEn: "London", lat: 51.51, lon: -0.13, kind: "featured" },
+  { id: "munich", nameZh: "慕尼黑", nameEn: "Munich", lat: 48.14, lon: 11.58, kind: "featured" },
+  { id: "newyork", nameZh: "纽约", nameEn: "New York", lat: 40.71, lon: -74.01, kind: "featured" },
+  { id: "tokyo", nameZh: "东京", nameEn: "Tokyo", lat: 35.68, lon: 139.69, kind: "featured" },
+  { id: "shanghai", nameZh: "上海", nameEn: "Shanghai", lat: 31.23, lon: 121.47, kind: "featured" },
+  { id: "singapore", nameZh: "新加坡", nameEn: "Singapore", lat: 1.35, lon: 103.82, kind: "featured" },
+  { id: "chengdu", nameZh: "成都", nameEn: "Chengdu", lat: 30.67, lon: 104.07, kind: "footprint" },
+  { id: "chongqing", nameZh: "重庆", nameEn: "Chongqing", lat: 29.56, lon: 106.55, kind: "footprint" },
+  { id: "xian", nameZh: "西安", nameEn: "Xi'an", lat: 34.34, lon: 108.94, kind: "footprint" },
+  { id: "changsha", nameZh: "长沙", nameEn: "Changsha", lat: 28.23, lon: 112.94, kind: "footprint" },
+  { id: "macau", nameZh: "澳门", nameEn: "Macau", lat: 22.19, lon: 113.54, kind: "footprint" },
+  { id: "zhuhai", nameZh: "珠海", nameEn: "Zhuhai", lat: 22.27, lon: 113.58, kind: "footprint" },
+  { id: "foshan", nameZh: "佛山", nameEn: "Foshan", lat: 23.02, lon: 113.12, kind: "footprint" },
+  { id: "guangzhou", nameZh: "广州", nameEn: "Guangzhou", lat: 23.13, lon: 113.26, kind: "footprint" },
+  { id: "shenzhen", nameZh: "深圳", nameEn: "Shenzhen", lat: 22.54, lon: 114.06, kind: "footprint" },
+  { id: "hongkong", nameZh: "香港", nameEn: "Hong Kong", lat: 22.32, lon: 114.17, kind: "footprint" },
+  { id: "shantou", nameZh: "汕头", nameEn: "Shantou", lat: 23.35, lon: 116.68, kind: "footprint" },
+  { id: "chaozhou", nameZh: "潮州", nameEn: "Chaozhou", lat: 23.66, lon: 116.63, kind: "footprint" },
+  { id: "jieyang", nameZh: "揭阳", nameEn: "Jieyang", lat: 23.55, lon: 116.37, kind: "footprint" },
+  { id: "zhangzhou", nameZh: "漳州", nameEn: "Zhangzhou", lat: 24.51, lon: 117.65, kind: "footprint" },
+  { id: "xiamen", nameZh: "厦门", nameEn: "Xiamen", lat: 24.48, lon: 118.09, kind: "footprint" },
+  { id: "hangzhou", nameZh: "杭州", nameEn: "Hangzhou", lat: 30.27, lon: 120.15, kind: "footprint" },
+  { id: "nanjing", nameZh: "南京", nameEn: "Nanjing", lat: 32.06, lon: 118.8, kind: "footprint" },
+  { id: "suzhou", nameZh: "苏州", nameEn: "Suzhou", lat: 31.3, lon: 120.62, kind: "footprint" },
+  { id: "yangzhou", nameZh: "扬州", nameEn: "Yangzhou", lat: 32.39, lon: 119.42, kind: "footprint" },
+  { id: "yantai", nameZh: "烟台", nameEn: "Yantai", lat: 37.46, lon: 121.45, kind: "footprint" },
+  { id: "weihai", nameZh: "威海", nameEn: "Weihai", lat: 37.51, lon: 122.12, kind: "footprint" },
+  { id: "jinan", nameZh: "济南", nameEn: "Jinan", lat: 36.67, lon: 117.0, kind: "footprint" },
+  { id: "tianjin", nameZh: "天津", nameEn: "Tianjin", lat: 39.13, lon: 117.2, kind: "footprint" },
+  { id: "shenyang", nameZh: "沈阳", nameEn: "Shenyang", lat: 41.8, lon: 123.43, kind: "footprint" },
+  { id: "dalian", nameZh: "大连", nameEn: "Dalian", lat: 38.91, lon: 121.61, kind: "footprint" },
+  { id: "changchun", nameZh: "长春", nameEn: "Changchun", lat: 43.88, lon: 125.32, kind: "footprint" },
+  { id: "qiqihar", nameZh: "齐齐哈尔", nameEn: "Qiqihar", lat: 47.35, lon: 123.92, kind: "footprint" },
+  { id: "harbin", nameZh: "哈尔滨", nameEn: "Harbin", lat: 45.8, lon: 126.53, kind: "footprint" },
+  { id: "berlin", nameZh: "柏林", nameEn: "Berlin", lat: 52.52, lon: 13.4, kind: "footprint" },
+  { id: "philadelphia", nameZh: "费城", nameEn: "Philadelphia", lat: 39.95, lon: -75.16, kind: "footprint" },
+  { id: "washington", nameZh: "华盛顿", nameEn: "Washington", lat: 38.91, lon: -77.04, kind: "footprint" },
+  { id: "boston", nameZh: "波士顿", nameEn: "Boston", lat: 42.36, lon: -71.06, kind: "footprint" },
+  { id: "niagara", nameZh: "尼亚加拉瀑布", nameEn: "Niagara Falls", lat: 43.09, lon: -79.04, kind: "footprint" },
+  { id: "edinburgh", nameZh: "爱丁堡", nameEn: "Edinburgh", lat: 55.95, lon: -3.19, kind: "footprint" },
+  { id: "oxford", nameZh: "牛津", nameEn: "Oxford", lat: 51.75, lon: -1.26, kind: "footprint" },
+  { id: "cambridge", nameZh: "剑桥", nameEn: "Cambridge", lat: 52.2, lon: 0.12, kind: "footprint" },
+  { id: "osaka", nameZh: "大阪", nameEn: "Osaka", lat: 34.69, lon: 135.5, kind: "footprint" },
+  { id: "kyoto", nameZh: "京都", nameEn: "Kyoto", lat: 35.01, lon: 135.77, kind: "footprint" },
+  { id: "nara", nameZh: "奈良", nameEn: "Nara", lat: 34.69, lon: 135.8, kind: "footprint" },
 ];
 
 function pointInRing(lon: number, lat: number, ring: LonLat[]): boolean {
@@ -99,7 +141,7 @@ export function initGlobe(host: HTMLElement): () => void {
   canvas.setAttribute("role", "img");
   canvas.setAttribute(
     "aria-label",
-    "Interactive globe with flight arcs from Beijing to London, Munich, New York, Tokyo, Shanghai and Singapore",
+    "可拖动的地球。到过的城市是足迹点，精选城市有到北京的航线。悬停或聚焦可查看城市。",
   );
 
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -114,7 +156,7 @@ export function initGlobe(host: HTMLElement): () => void {
   const labelEl = document.querySelector<HTMLElement>("#globe-label");
   const labelCoord = document.querySelector<HTMLElement>("#globe-label-coord");
   const labelName = document.querySelector<HTMLElement>("#globe-label-name");
-  const hub = CITIES.find((c) => c.hub)!;
+  const hub = CITIES.find((c) => c.kind === "hub")!;
   const setLabel = (city: City) => {
     const { title, coord } = cityLabel(city);
     if (labelCoord) labelCoord.textContent = coord;
@@ -160,10 +202,9 @@ export function initGlobe(host: HTMLElement): () => void {
     city,
     p: point(city.lat, city.lon),
   }));
-  const origin = cityPoints.find((c) => c.city.hub)!.p;
-  const destinations = cityPoints.filter((c) => !c.city.hub);
+  const origin = cityPoints.find((c) => c.city.kind === "hub")!.p;
   const ARC_STEPS = 72;
-  const arcs = destinations.map(({ p: target }) =>
+  const arcBetween = (target: Point): Point[] =>
     Array.from({ length: ARC_STEPS }, (_, i): Point => {
       const t = i / (ARC_STEPS - 1);
       const v: Point = [
@@ -173,11 +214,18 @@ export function initGlobe(host: HTMLElement): () => void {
       ];
       const s = (1.26 + Math.sin(Math.PI * t) * 0.22) / Math.hypot(...v);
       return [v[0] * s, v[1] * s, v[2] * s];
-    }),
+    });
+  // Every non-hub city has a path ready, but only featured arcs (plus the
+  // city under the pointer) are stroked. Footprints stay dots.
+  const arcById = new Map<string, Point[]>(
+    cityPoints
+      .filter(({ city }) => city.kind !== "hub")
+      .map(({ city, p }): [string, Point[]] => [city.id, arcBetween(p)]),
   );
 
-  // Focusable hit targets for keyboard + pointer
-  const hits = CITIES.map((city) => {
+  // Keyboard targets for the hub and featured cities only. Footprints are
+  // picked from the canvas so the tab order stays short.
+  const hits = CITIES.filter((city) => city.kind !== "footprint").map((city) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "globe-city-hit";
@@ -193,8 +241,9 @@ export function initGlobe(host: HTMLElement): () => void {
     height = 0,
     scale = 0,
     dpr = 1;
-  let yaw = -0.35,
-    pitch = 0.18,
+  // Face East Asia so the footprint cluster and Beijing sit on the front.
+  let yaw = -1.9,
+    pitch = 0.28,
     frame = 0,
     previous = 0,
     animT = 0;
@@ -297,9 +346,15 @@ export function initGlobe(host: HTMLElement): () => void {
       }
     }
 
-    arcs.forEach((path, i) => {
+    const arcIds: string[] = [];
+    for (const city of CITIES) {
+      if (city.kind === "featured") arcIds.push(city.id);
+    }
+    if (activeCity?.kind === "footprint") arcIds.push(activeCity.id);
+    arcIds.forEach((id, i) => {
+      const path = arcById.get(id);
+      if (!path) return;
       strokeArcBase(path);
-      // Slow ~10s loop, staggered per arc
       const phase = (animT / 10 + i * 0.13) % 1;
       strokeArcPulse(path, phase);
     });
@@ -309,29 +364,52 @@ export function initGlobe(host: HTMLElement): () => void {
       return { city, x, y, z };
     });
 
-    ctx.globalAlpha = 1;
-    for (const { city, x, y, z } of projectedCities) {
+    const ordered = [...projectedCities].sort((a, b) => {
+      const rank = (kind: CityKind) => (kind === "hub" ? 2 : kind === "featured" ? 1 : 0);
+      return rank(a.city.kind) - rank(b.city.kind);
+    });
+    for (const { city, x, y, z } of ordered) {
       if (z < -0.05) continue;
       const active = activeCity?.id === city.id;
-      const hubCity = !!city.hub;
-      ctx.fillStyle = light
-        ? active
-          ? "#0b4a32"
-          : "#1b6c4d"
-        : active
-          ? "#ffffff"
-          : "#caffdf";
+      const hubCity = city.kind === "hub";
+      const front = z > 0;
+      const core = hubCity ? (small ? 3.4 : 4.2) : active ? (small ? 2.6 : 3) : small ? 1.8 : 2.15;
+      const pulse = hubCity && !motion.matches ? 0.5 + 0.5 * Math.sin(animT * 1.3) : 0;
+      const glow = hubCity ? core * 2.6 + pulse * 3.2 : core * 2.4;
+      ctx.fillStyle = light ? (hubCity ? "#0d4f38" : "#146046") : hubCity ? "#ffffff" : "#d8ffe8";
+      ctx.globalAlpha = front ? (hubCity ? 0.34 + pulse * 0.28 : active ? 0.5 : 0.34) : 0.1;
       ctx.beginPath();
-      ctx.arc(x, y, hubCity ? (active ? 4.2 : 3.4) : active ? 3.2 : 2.2, 0, Math.PI * 2);
+      ctx.arc(x, y, glow, 0, Math.PI * 2);
       ctx.fill();
-      if (active || hubCity) {
-        ctx.strokeStyle = light ? "rgba(27,108,77,.45)" : "rgba(202,255,223,.45)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(x, y, hubCity ? 7 : 5.5, 0, Math.PI * 2);
-        ctx.stroke();
-      }
+      ctx.fillStyle = light ? (active || hubCity ? "#083d28" : "#1b6c4d") : active || hubCity ? "#ffffff" : "#e7fff2";
+      ctx.globalAlpha = front ? 0.95 : 0.28;
+      ctx.beginPath();
+      ctx.arc(x, y, core, 0, Math.PI * 2);
+      ctx.fill();
     }
+
+    ctx.font = '13px "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+    ctx.textBaseline = "bottom";
+    ctx.textAlign = "left";
+    const labelCandidates: { x: number; y: number; z: number; text: string }[] = [];
+    for (const { city, x, y, z } of projectedCities) {
+      if (city.kind === "footprint") continue;
+      if (city.kind === "hub" && (!activeCity || activeCity.id === hub.id)) continue;
+      if (z < 0.35) continue;
+      if (activeCity?.id === city.id) continue;
+      if (x < 4 || x > width - 48 || y < 18 || y > height - 6) continue;
+      labelCandidates.push({ x: x + 8, y: y - 6, z, text: city.nameZh });
+    }
+    labelCandidates.sort((a, b) => b.z - a.z);
+    const placed: { x: number; y: number }[] = [];
+    ctx.fillStyle = light ? "#14543c" : "#d9f8e8";
+    for (const label of labelCandidates) {
+      if (placed.some((p) => Math.hypot(p.x - label.x, p.y - label.y) < 46)) continue;
+      placed.push(label);
+      ctx.globalAlpha = 0.9;
+      ctx.fillText(label.text, label.x, label.y);
+    }
+    ctx.globalAlpha = 1;
 
     // Reposition keyboard/pointer hit targets
     for (const { city, btn } of hits) {
