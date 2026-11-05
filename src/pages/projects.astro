@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import WorkCase from "../components/WorkCase.astro";
 import ProjectCards from "../components/ProjectCards.astro";
 ---
 
@@ -10,11 +11,13 @@ import ProjectCards from "../components/ProjectCards.astro";
     <header class="page-heading">
       <p class="eyebrow">WORK / PROJECT INDEX</p>
       <h1>
-        项目<span class="accent">。</span>
-        <span lang="en">Projects</span>
+        工作与项目<span class="accent">。</span>
+        <span lang="en">Work & projects</span>
       </h1>
 
     </header>
+    <WorkCase />
+    <h2 class="archive-heading">其他项目 <span lang="en">Side projects & archive</span></h2>
     <ProjectCards />
   </div>
 </Base>

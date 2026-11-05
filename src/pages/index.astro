@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Hero from "../components/Hero.astro";
+import WorkCase from "../components/WorkCase.astro";
 import ProjectCards from "../components/ProjectCards.astro";
 import PostList from "../components/PostList.astro";
 import { getPosts } from "../data/posts";
@@ -37,10 +38,10 @@ const focus = [
   ],
   [
     "05",
-    "前端工程",
+    "工程与协作",
     "Engineering & Leadership",
-    "前端工程与团队管理",
-    "Front-end engineering & team leadership",
+    "工程落地与团队协作",
+    "Engineering delivery & team leadership",
   ],
 ];
 ---
@@ -118,15 +119,17 @@ const focus = [
   <section class="container section projects-section">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">04 / SELECTED PROJECTS</p>
+        <p class="eyebrow">04 / SELECTED WORK</p>
         <h2>
-          项目展示 <span lang="en">Projects</span>
+          工作与项目 <span lang="en">Work</span>
         </h2>
       </div>
       <a class="text-link" href="/projects/">
         全部项目 <span>All projects ↗</span>
       </a>
     </div>
+    <WorkCase />
+    <h3 class="archive-heading">其他项目 <span lang="en">Side projects & archive</span></h3>
     <ProjectCards />
   </section>
   <section class="container contact-section">

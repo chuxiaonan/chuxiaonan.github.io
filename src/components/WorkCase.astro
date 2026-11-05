@@ -1,0 +1,38 @@
+---
+const doing = [
+  "城市街道场景组织与仿真呈现",
+  "室内（商场、写字楼）仿真构建与调试",
+  "训练与评测闭环支撑（场景选择、结果可视化、回放等）",
+];
+const keywords = ["三维场景", "空间仿真", "渲染与空间数据", "机器人 / 自动驾驶 / 世界模型", "训练评测闭环"];
+---
+
+<article class="work-case" id="work" aria-labelledby="work-case-title">
+  <div class="work-case-top mono">
+    <span>CASE STUDY / 仿真</span>
+    <span>阿里巴巴 · 高德地图数据中心</span>
+  </div>
+  <h3 id="work-case-title">城市与室内空间仿真：面向机器人、自动驾驶与世界模型的训练评测闭环</h3>
+  <p class="work-case-lede">
+    负责城市街道与室内（商场、写字楼）三维场景仿真能力建设，支撑机器人、自动驾驶与世界模型的训练、仿真与评测闭环。
+  </p>
+  <p class="work-case-en" lang="en">
+    Urban-street and indoor (malls, offices) 3D scene simulation supporting training and evaluation loops for robotics, autonomous driving and world models.
+  </p>
+  <dl class="work-case-grid">
+    <div>
+      <dt>角色 <span lang="en">Role</span></dt>
+      <dd>阿里巴巴高德地图数据中心，仿真方向项目负责人。负责场景仿真相关能力的规划与落地，协同算法与工程团队打通「场景 → 训练/评测 → 反馈」链路。</dd>
+    </div>
+    <div>
+      <dt>做了什么 <span lang="en">What</span></dt>
+      <dd><ul>{doing.map((d) => <li>{d}</li>)}</ul></dd>
+    </div>
+    <div>
+      <dt>结果 <span lang="en">Result</span></dt>
+      <dd>已用于内部仿真训练与评测流程。</dd>
+    </div>
+  </dl>
+  <div class="tags">{keywords.map((k) => <span>{k}</span>)}</div>
+  <a class="text-link work-case-link" href="/about/">更多关于我 <span>About me ↗</span></a>
+</article>
