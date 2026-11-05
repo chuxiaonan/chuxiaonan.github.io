@@ -7,55 +7,29 @@ const { variant = "archive" } = Astro.props;
 const items = variant === "compact" ? projects.filter((project) => project.home) : projects;
 ---
 
-{
-  variant === "compact" ? (
-    <ul class="archive-list">
-      {items.map((project) => (
-        <li>
-          {project.year && <span class="mono archive-year">{project.year}</span>}
-          <div>
-            <h3>{project.title}</h3>
-            <p>{project.description}</p>
-          </div>
-          {project.links[0] && (
-            <a href={project.links[0].href} rel="noopener noreferrer">
-              {project.links[0].label} ↗
-            </a>
-          )}
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <div class="project-grid archive-grid">
-      {items.map((project, index) => (
-        <article class="project-card">
-          <div class="project-top">
-            <span class="mono">0{index + 1} / ARCHIVE</span>
-            {project.year && <span class="mono">{project.year}</span>}
-          </div>
-          <div class="project-art" aria-hidden="true">
-            <span class:list={["geometry", `geometry-${index}`]} />
-          </div>
+<ul class="record-list">
+  {
+    items.map((project, index) => (
+      <li class="record">
+        <span class="record-index">{String(index + 1).padStart(2, "0")}</span>
+        <div>
           <h3>{project.title}</h3>
           <p>{project.description}</p>
           {project.stack && project.stack.length > 0 && (
             <div class="tags">
               {project.stack.map((tag) => (
-                <span>{tag}</span>
+                <span class="tag">{tag}</span>
               ))}
             </div>
           )}
-          {project.links.length > 0 && (
-            <div class="project-links">
-              {project.links.map((link) => (
-                <a href={link.href} rel="noopener noreferrer">
-                  {link.label} ↗
-                </a>
-              ))}
-            </div>
-          )}
-        </article>
-      ))}
-    </div>
-  )
-}
+        </div>
+        {project.year && <span class="record-year">{project.year}</span>}
+        {project.links[0] && (
+          <a href={project.links[0].href} rel="noopener noreferrer">
+            {project.links[0].label}
+          </a>
+        )}
+      </li>
+    ))
+  }
+</ul>

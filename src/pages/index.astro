@@ -18,38 +18,28 @@ const focus = [
 
 <Base>
   <Hero />
-  <section id="intro" class="container section intro">
-    <div>
-      <p class="eyebrow">01 / INTRODUCTION</p>
-      <h2>
-        以技术构建，
-        <br />
-        在空间中探索<span class="accent">。</span>
-      </h2>
-      <p class="section-subtitle" lang="en">
-        Building with code. Thinking in space.
-      </p>
-    </div>
-    <div class="intro-copy">
-      <p>{intro.zh}</p>
-      <p lang="en">{intro.en}</p>
-      <a class="text-link" href="/about/">更多关于我</a>
+  <div class="hatch" aria-hidden="true"></div>
+  <section id="intro" class="section rule-top">
+    <div class="wide">
+      <p class="figure-label">Figure 01 / 简介</p>
+      <h2 class="section-title">以技术构建，在空间中探索。</h2>
+      <div class="intro-copy">
+        <p>{intro.zh}</p>
+        <p lang="en">{intro.en}</p>
+        <a class="text-link" href="/about/">更多关于我</a>
+      </div>
     </div>
   </section>
-  <section class="focus-section">
-    <div class="container section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">02 / FOCUS AREAS</p>
-          <h2>技术方向</h2>
-        </div>
-        <p class="small-note">从像素到空间，从代码到协作。</p>
-      </div>
-      <div class="focus-grid">
+  <div class="hatch" aria-hidden="true"></div>
+  <section class="section rule-top">
+    <div class="wide">
+      <p class="figure-label">Figure 02 / 技术方向</p>
+      <h2 class="section-title">从像素到空间，从代码到协作。</h2>
+      <div class="practice-grid">
         {
           focus.map(([n, zh, desc]) => (
-            <article>
-              <span class="mono focus-number">{n}</span>
+            <article class="practice-item">
+              <span class="practice-index">{n}</span>
               <h3>{zh}</h3>
               <p>{desc}</p>
             </article>
@@ -58,40 +48,47 @@ const focus = [
       </div>
     </div>
   </section>
-  <section class="container section work-section">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">03 / SELECTED WORK</p>
-        <h2>工作</h2>
+  <div class="hatch" aria-hidden="true"></div>
+  <section class="section rule-top">
+    <div class="wide">
+      <div class="section-heading">
+        <div>
+          <p class="figure-label">Figure 03 / 工作</p>
+          <h2 class="section-title">工作</h2>
+        </div>
+        <a class="text-link" href="/projects/">全部工作</a>
       </div>
-      <a class="text-link" href="/projects/">全部工作</a>
-    </div>
-    <WorkCase />
-    <div class="archive-block">
-      <h3 class="archive-heading">本站源码</h3>
-      <ProjectCards variant="compact" />
+      <WorkCase />
+      <div class="archive-block">
+        <h3 class="archive-heading">本站源码</h3>
+        <ProjectCards variant="compact" />
+      </div>
     </div>
   </section>
-  <section class="container section writing-section">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">04 / WRITING</p>
-        <h2>最近文章</h2>
+  <div class="hatch" aria-hidden="true"></div>
+  <section class="section rule-top">
+    <div class="wide">
+      <div class="section-heading">
+        <div>
+          <p class="figure-label">Figure 04 / 笔记</p>
+          <h2 class="section-title">最近文章</h2>
+        </div>
+        <a class="text-link" href="/blog/">全部文章</a>
       </div>
-      <a class="text-link" href="/blog/">全部文章</a>
+      <PostList posts={posts} />
     </div>
-    <PostList posts={posts} />
   </section>
-  <section class="container contact-section">
-    <div>
-      <p class="eyebrow">05 / ELSEWHERE</p>
-      <h2>
-        保持连接<span class="accent">。</span>
-      </h2>
+  <div class="hatch" aria-hidden="true"></div>
+  <section class="contact rule-top">
+    <div class="wide">
+      <div>
+        <p class="figure-label">Figure 05 / 连接</p>
+        <h2>保持连接。</h2>
+      </div>
+      <a class="contact-link" href={site.github} rel="noopener noreferrer">
+        GitHub
+        <small>github.com/chuxiaonan</small>
+      </a>
     </div>
-    <a class="contact-link" href={site.github} rel="noopener noreferrer">
-      GitHub <span>↗</span>
-      <small>github.com/chuxiaonan</small>
-    </a>
   </section>
 </Base>

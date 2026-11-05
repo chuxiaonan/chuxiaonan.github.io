@@ -4,65 +4,60 @@ import { site, intro } from "../data/site";
 ---
 
 <Base title="关于">
-  <div class="container page-content">
-    <header class="page-heading">
-      <p class="eyebrow">PROFILE / ABOUT</p>
-      <h1>
-        关于我<span class="accent">。</span>
-      </h1>
-    </header>
-    <div class="intro-copy about-intro">
-      <p>{intro.zh}</p>
-      <p lang="en">{intro.en}</p>
-    </div>
-    <div class="about-layout">
-      <div class="profile-symbol" aria-hidden="true">
-        楚<span>CHU / XIAONAN</span>
+  <div class="hatch" aria-hidden="true"></div>
+  <div class="page rule-top">
+    <div class="narrow">
+      <header>
+        <p class="figure-label">Figure / 关于</p>
+        <h1 class="page-title">关于我</h1>
+      </header>
+      <div class="page-intro">
+        <p>{intro.zh}</p>
+        <p lang="en">{intro.en}</p>
       </div>
-      <div class="about-details">
-        <h2>
-          {site.name} <span lang="en">{site.englishName}</span>
-        </h2>
-        <p>{site.title}</p>
-        <p>
-          {site.organization}
-          <span class="secondary-line" lang="en">
-            {site.organizationEn}
-          </span>
-        </p>
-        <dl>
-          <div>
-            <dt>工作方向</dt>
-            <dd>三维场景与空间仿真；渲染、建模与 GIS 技术</dd>
-          </div>
-          <div>
-            <dt>所在地</dt>
-            <dd>{site.location}</dd>
-          </div>
-          <div>
-            <dt>教育背景</dt>
-            <dd>
-              上海交通大学
-              <span class="secondary-line" lang="en">
-                Shanghai Jiao Tong University
-              </span>
-              <br />
-              中国科学院大学
-              <span class="secondary-line" lang="en">
-                University of Chinese Academy of Sciences
-              </span>
-            </dd>
-          </div>
-          <div>
-            <dt>链接</dt>
-            <dd>
-              <a class="text-link" href={site.github} rel="noopener noreferrer">
-                GitHub ↗
-              </a>
-            </dd>
-          </div>
-        </dl>
-      </div>
+      <dl class="about-facts">
+        <div>
+          <dt>姓名</dt>
+          <dd>
+            {site.name}
+            <span class="secondary-line" lang="en">{site.englishName}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>角色</dt>
+          <dd>{site.title}</dd>
+        </div>
+        <div>
+          <dt>机构</dt>
+          <dd>
+            {site.organization}
+            <span class="secondary-line" lang="en">{site.organizationEn}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>方向</dt>
+          <dd>三维场景与空间仿真；渲染、建模与 GIS 技术</dd>
+        </div>
+        <div>
+          <dt>所在</dt>
+          <dd>{site.location}</dd>
+        </div>
+        <div>
+          <dt>教育</dt>
+          <dd>
+            上海交通大学
+            <span class="secondary-line" lang="en">Shanghai Jiao Tong University</span>
+            中国科学院大学
+            <span class="secondary-line" lang="en">University of Chinese Academy of Sciences</span>
+          </dd>
+        </div>
+        <div>
+          <dt>链接</dt>
+          <dd>
+            <a class="text-link" href={site.github} rel="noopener noreferrer">GitHub</a>
+          </dd>
+        </div>
+      </dl>
     </div>
   </div>
 </Base>

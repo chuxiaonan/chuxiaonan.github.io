@@ -2,56 +2,48 @@
 import { site } from "../data/site";
 ---
 
-<section class="hero" aria-labelledby="hero-title">
-  <div class="hero-grid" aria-hidden="true"></div>
-  <div class="globe-stage">
-    <svg class="globe-fallback" viewBox="0 0 600 600" fill="none" aria-hidden="true">
-      <g stroke="currentColor" opacity=".5">
-        <circle cx="300" cy="300" r="230" />
-        <ellipse cx="300" cy="300" rx="170" ry="230" />
-        <ellipse cx="300" cy="300" rx="80" ry="230" />
-        <ellipse cx="300" cy="300" rx="230" ry="80" />
-        <ellipse cx="300" cy="300" rx="230" ry="170" />
-        <path d="M70 300h460M300 70v460" />
-      </g>
-      <circle cx="410" cy="180" r="5" fill="currentColor" />
-    </svg>
-    <div id="globe-canvas"></div>
-    <span class="globe-coordinate mono" id="globe-label" role="status" aria-live="polite">
-      <span id="globe-label-coord">39.90° N 116.40° E</span><br />
-      <span id="globe-label-name">北京 · BEIJING</span>
-    </span>
-    <p class="globe-hint mono" aria-hidden="true">拖动旋转<br />点 = 足迹 · 线 = 精选/当前</p>
-    <p class="visually-hidden">地球可以拖动旋转。点是到过的城市，线是精选航线或当前选中的城市。</p>
-  </div>
-  <div class="container hero-content">
-    <p class="eyebrow">
-      <span class="status-dot"></span> RENDERING · SIMULATION · GIS
-    </p>
-    <h1 id="hero-title">
+<section class="hero-layout wide rule-top" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="figure-label">Figure 00 / 档案</p>
+    <h1 class="hero-title" id="hero-title">
       楚骁男
-      <span lang="en">
-        Chu Xiaonan<span class="accent">.</span>
-      </span>
+      <span lang="en">Chu Xiaonan</span>
     </h1>
-    <p class="hero-role">{site.title}</p>
-    <p class="hero-org">
+    <p class="hero-statement">{site.title}</p>
+    <p class="hero-body">
       {site.organization}
       <span lang="en">{site.organizationEn}</span>
     </p>
     <div class="hero-actions">
-      <a class="button primary" href="/projects/#work">了解工作 ↗</a>
-      <a class="button secondary" href={site.github} rel="noopener noreferrer">
-        GitHub ↗
-      </a>
+      <a class="button primary" href="/projects/#work">了解工作</a>
+      <a class="button" href={site.github} rel="noopener noreferrer">GitHub</a>
     </div>
   </div>
-  <div class="hero-bottom container mono">
-    <span>SPATIAL SIMULATION / BEIJING</span>
-    <a href="#intro">
-      向下探索 <span aria-hidden="true">↓</span>
-    </a>
-  </div>
+  <figure class="globe-plate">
+    <div class="globe-frame">
+      <div class="globe-stage">
+        <svg class="globe-fallback" viewBox="0 0 600 600" fill="none" aria-hidden="true">
+          <g stroke="currentColor" stroke-width="1.25">
+            <circle cx="300" cy="300" r="230" />
+            <ellipse cx="300" cy="300" rx="170" ry="230" />
+            <ellipse cx="300" cy="300" rx="80" ry="230" />
+            <ellipse cx="300" cy="300" rx="230" ry="80" />
+            <ellipse cx="300" cy="300" rx="230" ry="170" />
+            <path d="M70 300h460M300 70v460" />
+          </g>
+          <circle cx="410" cy="180" r="4" fill="currentColor" />
+        </svg>
+        <div id="globe-canvas"></div>
+        <span class="globe-coordinate mono" id="globe-label" role="status" aria-live="polite">
+          <span id="globe-label-coord">39.90° N 116.40° E</span><br />
+          <span id="globe-label-name">北京 · BEIJING</span>
+        </span>
+        <p class="globe-hint">拖动旋转</p>
+        <p class="visually-hidden">地球可以拖动旋转。点是到过的城市，线是精选航线或当前选中的城市。</p>
+      </div>
+    </div>
+    <figcaption class="mark-caption">图版 00 / 空间<br />点 = 足迹 · 线 = 精选/当前</figcaption>
+  </figure>
 </section>
 <script>
   const host = document.querySelector<HTMLElement>("#globe-canvas");

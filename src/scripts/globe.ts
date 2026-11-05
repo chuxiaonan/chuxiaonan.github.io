@@ -252,7 +252,10 @@ export function initGlobe(host: HTMLElement): () => void {
     dragging = false;
   let lastX = 0,
     lastY = 0,
-    light = false;
+    ink = "#161616";
+  const readInk = () => {
+    ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || ink;
+  };
   let activeCity: City | null = null;
   let pinned = false;
   let target: { yaw: number; pitch: number } | null = null;
@@ -271,7 +274,7 @@ export function initGlobe(host: HTMLElement): () => void {
   };
 
   const strokeGrid = () => {
-    ctx.strokeStyle = light ? "#21684f" : "#70bca5";
+    ctx.strokeStyle = ink;
     ctx.lineWidth = 0.65;
     for (const path of grid) {
       for (let i = 1; i < path.length; i++) {
@@ -287,7 +290,7 @@ export function initGlobe(host: HTMLElement): () => void {
   };
 
   const strokeArcBase = (path: Point[]) => {
-    ctx.strokeStyle = light ? "#2a7a5c" : "#9fe8c8";
+    ctx.strokeStyle = ink;
     ctx.lineWidth = 1.05;
     for (let i = 1; i < path.length; i++) {
       const a = project(path[i - 1]!);
@@ -307,7 +310,7 @@ export function initGlobe(host: HTMLElement): () => void {
     const head = phase * len;
     const span = Math.max(4, Math.floor(len * 0.12));
     ctx.lineWidth = 2;
-    ctx.strokeStyle = light ? "#0f5a3d" : "#eafff4";
+    ctx.strokeStyle = ink;
     for (let i = 1; i < path.length; i++) {
       const dist = Math.min(Math.abs(i - head), Math.abs(i - head - len), Math.abs(i - head + len));
       if (dist > span) continue;
@@ -323,6 +326,7 @@ export function initGlobe(host: HTMLElement): () => void {
   };
 
   const draw = () => {
+    readInk();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
     strokeGrid();
@@ -332,13 +336,13 @@ export function initGlobe(host: HTMLElement): () => void {
     for (const { p, land } of dots) {
       const [x, y, z] = project(p);
       if (land) {
-        ctx.fillStyle = light ? "#1f6b4f" : "#d2fbe6";
+        ctx.fillStyle = ink;
         ctx.globalAlpha = z > 0 ? 0.95 : 0.2;
         ctx.beginPath();
         ctx.arc(x, y, rLand, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        ctx.fillStyle = light ? "#9bb8ad" : "#3a6356";
+        ctx.fillStyle = ink;
         ctx.globalAlpha = z > 0 ? 0.28 : 0.07;
         ctx.beginPath();
         ctx.arc(x, y, rOcean, 0, Math.PI * 2);
@@ -376,12 +380,12 @@ export function initGlobe(host: HTMLElement): () => void {
       const core = hubCity ? (small ? 3.4 : 4.2) : active ? (small ? 2.6 : 3) : small ? 1.8 : 2.15;
       const pulse = hubCity && !motion.matches ? 0.5 + 0.5 * Math.sin(animT * 1.3) : 0;
       const glow = hubCity ? core * 2.6 + pulse * 3.2 : core * 2.4;
-      ctx.fillStyle = light ? (hubCity ? "#0d4f38" : "#146046") : hubCity ? "#ffffff" : "#d8ffe8";
+      ctx.fillStyle = ink;
       ctx.globalAlpha = front ? (hubCity ? 0.34 + pulse * 0.28 : active ? 0.5 : 0.34) : 0.1;
       ctx.beginPath();
       ctx.arc(x, y, glow, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = light ? (active || hubCity ? "#083d28" : "#1b6c4d") : active || hubCity ? "#ffffff" : "#e7fff2";
+      ctx.fillStyle = ink;
       ctx.globalAlpha = front ? 0.95 : 0.28;
       ctx.beginPath();
       ctx.arc(x, y, core, 0, Math.PI * 2);
@@ -402,7 +406,7 @@ export function initGlobe(host: HTMLElement): () => void {
     }
     labelCandidates.sort((a, b) => b.z - a.z);
     const placed: { x: number; y: number }[] = [];
-    ctx.fillStyle = light ? "#14543c" : "#d9f8e8";
+    ctx.fillStyle = ink;
     for (const label of labelCandidates) {
       if (placed.some((p) => Math.hypot(p.x - label.x, p.y - label.y) < 46)) continue;
       placed.push(label);
@@ -484,7 +488,7 @@ export function initGlobe(host: HTMLElement): () => void {
     resume();
   });
   const palette = () => {
-    light = document.documentElement.dataset.theme === "light";
+    readInk();
     if (width && height) draw();
     resume();
   };
