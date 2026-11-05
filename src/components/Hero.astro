@@ -21,6 +21,8 @@ import { site } from "../data/site";
       <span id="globe-label-coord">39.90° N 116.40° E</span><br />
       <span id="globe-label-name">北京 · BEIJING</span>
     </span>
+    <p class="globe-hint mono" aria-hidden="true">拖动旋转</p>
+    <p class="visually-hidden">地球可以拖动旋转。</p>
   </div>
   <div class="container hero-content">
     <p class="eyebrow">
@@ -38,10 +40,8 @@ import { site } from "../data/site";
       <span lang="en">{site.organizationEn}</span>
     </p>
     <div class="hero-actions">
-      <a class="button primary" href="/projects/#work">
-        了解工作 <span>See the work ↗</span>
-      </a>
-      <a class="button secondary" href={site.github}>
+      <a class="button primary" href="/projects/#work">了解工作 ↗</a>
+      <a class="button secondary" href={site.github} rel="noopener noreferrer">
         GitHub ↗
       </a>
     </div>

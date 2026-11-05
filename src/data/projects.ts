@@ -4,14 +4,17 @@ export interface Project {
   descriptionEn: string;
   year?: string;
   stack?: string[];
+  /** Shown in the quiet homepage archive. Other entries stay on the work page. */
+  home?: boolean;
   links: { label: string; href: string }[];
 }
 export const projects: Project[] = [
   {
     "title": "chuxiaonan.github.io",
-    "description": "本站源码：基于 Astro 的个人技术网站，首页地球由手写 Canvas 渲染器绘制，经 GitHub Actions 部署到 GitHub Pages。",
+    "description": "本站源码：基于 Astro 的个人网站，首页地球由手写 Canvas 渲染器绘制，经 GitHub Actions 部署到 GitHub Pages。",
     "descriptionEn": "Source of this site: an Astro personal site with a hand-written canvas globe, deployed to GitHub Pages via GitHub Actions.",
     "year": "2026",
+    "home": true,
     "stack": [
       "Astro",
       "TypeScript",

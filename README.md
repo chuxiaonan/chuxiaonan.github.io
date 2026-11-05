@@ -36,7 +36,7 @@ lang: zh-CN # 可选，zh-CN 或 en，默认 zh-CN
 
 ## 修改项目
 
-编辑 `src/data/projects.ts`：每项含 `title`、`description`、`descriptionEn`、可选的 `year` 和 `stack`、`links`；链接为 `{ label: 'GitHub', href: 'https://...' }`。首页与项目页共用该数据。
+编辑 `src/data/projects.ts`：每项含 `title`、`description`、`descriptionEn`、可选的 `year`、`stack`、`home` 和 `links`。`home: true` 的条目出现在首页「本站源码」；其余只在工作页的早期实验里。链接为 `{ label: 'GitHub', href: 'https://...' }`。
 
 ## 修改个人信息与页面
 

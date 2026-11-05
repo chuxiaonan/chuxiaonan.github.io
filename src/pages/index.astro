@@ -8,41 +8,11 @@ import { getPosts } from "../data/posts";
 import { site, intro } from "../data/site";
 const posts = (await getPosts()).slice(0, 3);
 const focus = [
-  [
-    "01",
-    "渲染",
-    "Rendering",
-    "图形渲染与可视化",
-    "Graphics rendering & visualization",
-  ],
-  [
-    "02",
-    "三维建模",
-    "3D Modeling",
-    "三维空间与模型表达",
-    "Spatial & model representation",
-  ],
-  [
-    "03",
-    "地理信息",
-    "GIS & Web Mapping",
-    "地理信息与 Web 地图技术",
-    "Geographic information & web maps",
-  ],
-  [
-    "04",
-    "仿真",
-    "Simulation",
-    "仿真与虚拟世界构建",
-    "Simulation & virtual world building",
-  ],
-  [
-    "05",
-    "工程与协作",
-    "Engineering & Leadership",
-    "工程落地与团队协作",
-    "Engineering delivery & team leadership",
-  ],
+  ["01", "渲染", "图形渲染与可视化"],
+  ["02", "三维建模", "三维空间与模型表达"],
+  ["03", "地理信息", "地理信息与 Web 地图技术"],
+  ["04", "仿真", "仿真与虚拟世界构建"],
+  ["05", "工程与协作", "工程落地与团队协作"],
 ];
 ---
 
@@ -63,9 +33,7 @@ const focus = [
     <div class="intro-copy">
       <p>{intro.zh}</p>
       <p lang="en">{intro.en}</p>
-      <a class="text-link" href="/about/">
-        更多关于我 <span>About me ↗</span>
-      </a>
+      <a class="text-link" href="/about/">更多关于我</a>
     </div>
   </section>
   <section class="focus-section">
@@ -73,74 +41,55 @@ const focus = [
       <div class="section-heading">
         <div>
           <p class="eyebrow">02 / FOCUS AREAS</p>
-          <h2>
-            技术方向 <span lang="en">Focus areas</span>
-          </h2>
+          <h2>技术方向</h2>
         </div>
-        <p class="small-note">
-          从像素到空间，从代码到协作。
-          <br />
-          <span lang="en">Pixels, spaces, code & collaboration.</span>
-        </p>
+        <p class="small-note">从像素到空间，从代码到协作。</p>
       </div>
       <div class="focus-grid">
-        {focus.map(([n, zh, en, desc, secondary]) => (
-          <article>
-            <span class="mono focus-number">{n}</span>
-            <h3>{zh}</h3>
-            <p class="focus-en" lang="en">
-              {en}
-            </p>
-            <p>
-              {desc}
-              <span class="secondary-line" lang="en">
-                {secondary}
-              </span>
-            </p>
-          </article>
-        ))}
+        {
+          focus.map(([n, zh, desc]) => (
+            <article>
+              <span class="mono focus-number">{n}</span>
+              <h3>{zh}</h3>
+              <p>{desc}</p>
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>
-  <section class="container section">
+  <section class="container section work-section">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">03 / WRITING</p>
-        <h2>
-          最近文章 <span lang="en">Latest notes</span>
-        </h2>
+        <p class="eyebrow">03 / SELECTED WORK</p>
+        <h2>工作</h2>
       </div>
-      <a class="text-link" href="/blog/">
-        全部文章 <span>All notes ↗</span>
-      </a>
-    </div>
-    <PostList posts={posts} />
-  </section>
-  <section class="container section projects-section">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">04 / SELECTED WORK</p>
-        <h2>
-          工作与项目 <span lang="en">Work</span>
-        </h2>
-      </div>
-      <a class="text-link" href="/projects/">
-        全部项目 <span>All projects ↗</span>
-      </a>
+      <a class="text-link" href="/projects/">全部工作</a>
     </div>
     <WorkCase />
-    <h3 class="archive-heading">其他项目 <span lang="en">Side projects & archive</span></h3>
-    <ProjectCards />
+    <div class="archive-block">
+      <h3 class="archive-heading">本站源码</h3>
+      <ProjectCards variant="compact" />
+    </div>
+  </section>
+  <section class="container section writing-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">04 / WRITING</p>
+        <h2>最近文章</h2>
+      </div>
+      <a class="text-link" href="/blog/">全部文章</a>
+    </div>
+    <PostList posts={posts} />
   </section>
   <section class="container contact-section">
     <div>
       <p class="eyebrow">05 / ELSEWHERE</p>
       <h2>
         保持连接<span class="accent">。</span>
-        <span lang="en">Find me online.</span>
       </h2>
     </div>
-    <a class="contact-link" href={site.github}>
+    <a class="contact-link" href={site.github} rel="noopener noreferrer">
       GitHub <span>↗</span>
       <small>github.com/chuxiaonan</small>
     </a>
