@@ -21,26 +21,25 @@ const { Content } = await render(post);
   description={post.data.description}
   type="article"
 >
-  <article class="container article-wrap" lang={post.data.lang}>
-    <a class="text-link back-link" href="/blog/">← 返回博客</a>
+  <div class="hatch" aria-hidden="true"></div>
+  <article class="article rule-top narrow" lang={post.data.lang}>
+    <a class="text-link back-link" href="/blog/">返回博客</a>
     <header class="article-header">
-      <p class="eyebrow">TECHNICAL NOTE {post.data.draft && " / DRAFT"}</p>
-      <h1>{post.data.title}</h1>
-      <p>{post.data.description}</p>
-      <div class="article-meta mono">
+      <p class="figure-label">Figure / 笔记{post.data.draft && " / 草稿"}</p>
+      <h1 class="article-title">{post.data.title}</h1>
+      <p class="article-excerpt">{post.data.description}</p>
+      <div class="article-meta">
         <time datetime={post.data.pubDate.toISOString()}>
           {formatDate(post.data.pubDate)}
         </time>
         {post.data.updatedDate && (
           <span>
-            更新 / Updated{" "}
+            更新
             <time datetime={post.data.updatedDate.toISOString()}>
               {formatDate(post.data.updatedDate)}
             </time>
           </span>
         )}
-      </div>
-      <div class="tags">
         {post.data.tags.map((tag) => (
           <span>{tag}</span>
         ))}

@@ -8,20 +8,21 @@ import ProjectCards from "../components/ProjectCards.astro";
   title="工作"
   description="楚骁男在阿里巴巴高德地图数据中心的仿真工作：城市与室内空间仿真，以及另行归档的早期实验。"
 >
-  <div class="container page-content">
-    <header class="page-heading">
-      <p class="eyebrow">SELECTED WORK</p>
-      <h1>
-        工作<span class="accent">。</span>
-      </h1>
-    </header>
-    <WorkCase />
-    <div class="archive-block" id="archive">
-      <h2 class="archive-heading">
-        早期实验 <span lang="en">Early experiments</span>
-      </h2>
-      <p class="archive-note">早年的脚本，以及这个网站的源码。与现在的仿真工作分开归档。</p>
-      <ProjectCards />
+  <div class="hatch" aria-hidden="true"></div>
+  <div class="page rule-top">
+    <div class="wide">
+      <header>
+        <p class="figure-label">Figure / 工作</p>
+        <h1 class="page-title">工作</h1>
+      </header>
+      <WorkCase />
+      <div class="archive-block" id="archive">
+        <h2 class="archive-heading">
+          早期实验 <span lang="en">Early experiments</span>
+        </h2>
+        <p class="archive-note">早年的脚本，以及这个网站的源码。与现在的仿真工作分开归档。</p>
+        <ProjectCards />
+      </div>
     </div>
   </div>
 </Base>
