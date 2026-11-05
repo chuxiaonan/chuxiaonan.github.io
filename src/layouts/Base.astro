@@ -11,11 +11,12 @@ const pageTitle = title
   ? `${title} · ${site.name} Chu Xiaonan`
   : `${site.name} Chu Xiaonan · Simulation Lead`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
 const nav = [
-  ["/", "首页", "Home"],
-  ["/blog/", "博客", "Blog"],
-  ["/projects/", "项目", "Projects"],
-  ["/about/", "关于", "About"],
+  ["/", "首页"],
+  ["/blog/", "博客"],
+  ["/projects/", "工作"],
+  ["/about/", "关于"],
 ];
 ---
 
@@ -44,14 +45,22 @@ const nav = [
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="楚骁男 Chu Xiaonan，仿真项目负责人" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:site_name" content="Chu Xiaonan" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="楚骁男 Chu Xiaonan，仿真项目负责人" />
     <meta name="color-scheme" content="dark light" />
   </head>
   <body>
-    <a class="skip-link" href="#main">
-      跳转至内容 / Skip to content
-    </a>
+    <a class="skip-link" href="#main">跳转至内容</a>
     <header class="site-header">
       <div class="container header-inner">
         <a class="wordmark" href="/" aria-label="楚骁男 首页">
@@ -64,7 +73,7 @@ const nav = [
         </a>
         <nav aria-label="主导航">
           <ul>
-            {nav.map(([href, zh, en]) => (
+            {nav.map(([href, label]) => (
               <li>
                 <a
                   href={href}
@@ -78,7 +87,7 @@ const nav = [
                       : undefined
                   }
                 >
-                  {zh} <span lang="en">{en}</span>
+                  {label}
                 </a>
               </li>
             ))}
@@ -87,7 +96,7 @@ const nav = [
         <button
           class="theme-toggle"
           type="button"
-          aria-label="切换配色主题 / Toggle theme"
+          aria-label="切换配色主题"
           title="切换配色主题"
         >
           <svg
@@ -114,7 +123,7 @@ const nav = [
       </span>
       <div>
         <span>北京 / Beijing</span>
-        <a href={site.github}>GitHub ↗</a>
+        <a href={site.github} rel="noopener noreferrer">GitHub ↗</a>
         <a href="/rss.xml">RSS ↗</a>
       </div>
     </footer>
