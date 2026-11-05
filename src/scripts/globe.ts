@@ -103,7 +103,7 @@ export function initGlobe(host: HTMLElement): () => void {
   );
 
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
-  const small = matchMedia("(max-width: 700px)").matches;
+  const small = matchMedia("(max-width: 768px)").matches;
   const radians = Math.PI / 180;
   const point = (lat: number, lon: number, r = 1.25): Point => [
     r * Math.cos(lat * radians) * Math.sin(lon * radians),
@@ -120,6 +120,19 @@ export function initGlobe(host: HTMLElement): () => void {
     if (labelCoord) labelCoord.textContent = coord;
     if (labelName) labelName.textContent = title;
     if (labelEl) labelEl.dataset.city = city.id;
+  };
+  const placeLabel = () => {
+    if (!labelEl) return;
+    const proj = activeCity && projectedCities.find((c) => c.city.id === activeCity!.id);
+    if (!proj || proj.z < 0) {
+      labelEl.classList.remove("is-anchored");
+      labelEl.style.removeProperty("transform");
+      return;
+    }
+    const flip = proj.x > width - 190;
+    labelEl.classList.add("is-anchored");
+    labelEl.classList.toggle("is-flipped", flip);
+    labelEl.style.transform = `translate(${Math.round(proj.x + (flip ? -14 : 14))}px, ${Math.round(proj.y - 14)}px)`;
   };
   setLabel(hub);
 
@@ -192,6 +205,8 @@ export function initGlobe(host: HTMLElement): () => void {
     lastY = 0,
     light = false;
   let activeCity: City | null = null;
+  let pinned = false;
+  let target: { yaw: number; pitch: number } | null = null;
   let projectedCities: { city: City; x: number; y: number; z: number }[] = [];
 
   const project = ([x, y, z]: Point): Point => {
@@ -321,16 +336,13 @@ export function initGlobe(host: HTMLElement): () => void {
     // Reposition keyboard/pointer hit targets
     for (const { city, btn } of hits) {
       const proj = projectedCities.find((c) => c.city.id === city.id);
-      if (!proj || proj.z < 0) {
-        btn.hidden = true;
-        btn.tabIndex = -1;
-        continue;
-      }
-      btn.hidden = false;
-      btn.tabIndex = 0;
+      if (!proj) continue;
+      // Always focusable (keyboard rotates the city to the front); back side ignores pointer.
+      btn.classList.toggle("is-back", proj.z < 0);
       btn.style.transform = `translate(${proj.x}px, ${proj.y}px)`;
       btn.classList.toggle("is-active", activeCity?.id === city.id);
     }
+    placeLabel();
   };
 
   const pickCity = (clientX: number, clientY: number): City | null => {
@@ -362,12 +374,19 @@ export function initGlobe(host: HTMLElement): () => void {
     if (disposed || !visible || document.hidden) return;
     const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
     previous = time;
-    if (!motion.matches) {
-      if (!dragging) yaw += delta * 0.05;
-      animT += delta;
+    if (target) {
+      const k = motion.matches ? 1 : 1 - Math.exp(-delta * 6);
+      let dy = target.yaw - yaw;
+      dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      yaw += dy * k;
+      pitch += (target.pitch - pitch) * k;
+      if (Math.abs(dy) < 0.002 && Math.abs(target.pitch - pitch) < 0.002) target = null;
+    } else if (!motion.matches) {
+      if (!dragging && !activeCity) yaw += delta * 0.05;
     }
+    if (!motion.matches) animT += delta;
     draw();
-    if (!motion.matches || activeCity) frame = requestAnimationFrame(render);
+    if (!motion.matches || activeCity || target) frame = requestAnimationFrame(render);
   };
   const resume = () => {
     if (!frame && visible && !document.hidden && !disposed) frame = requestAnimationFrame(render);
@@ -410,10 +429,12 @@ export function initGlobe(host: HTMLElement): () => void {
   const down = (e: PointerEvent) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const hit = pickCity(e.clientX, e.clientY);
+    if (e.pointerType !== "mouse") pinned = !!hit;
     if (hit) {
       activate(hit);
       return;
     }
+    if (pinned === false && activeCity && e.pointerType !== "mouse") activate(null);
     if (motion.matches) return;
     dragging = true;
     lastX = e.clientX;
@@ -430,6 +451,7 @@ export function initGlobe(host: HTMLElement): () => void {
       resume();
       return;
     }
+    if (pinned || e.pointerType !== "mouse") return;
     activate(pickCity(e.clientX, e.clientY));
   };
   const up = () => {
@@ -437,11 +459,23 @@ export function initGlobe(host: HTMLElement): () => void {
     host.style.cursor = activeCity ? "pointer" : "grab";
   };
   const leave = () => {
-    if (!dragging) activate(null);
+    if (!dragging && !pinned) activate(null);
   };
 
   for (const { city, btn } of hits) {
-    btn.addEventListener("focus", () => activate(city));
+    btn.addEventListener("focus", () => {
+      target = {
+        yaw: -city.lon * radians,
+        pitch: Math.max(-1.1, Math.min(1.1, city.lat * radians)),
+      };
+      if (motion.matches) {
+        yaw = target.yaw;
+        pitch = target.pitch;
+        target = null;
+      }
+      activate(city);
+      resume();
+    });
     btn.addEventListener("blur", () => {
       if (document.activeElement && hits.some((h) => h.btn === document.activeElement)) return;
       activate(null);
