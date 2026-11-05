@@ -1,38 +1,74 @@
 ---
 const doing = [
-  "城市街道场景组织与仿真呈现",
-  "室内（商场、写字楼）仿真构建与调试",
-  "训练与评测闭环支撑（场景选择、结果可视化、回放等）",
+  ["城市街道", "城市街道场景组织与仿真呈现"],
+  ["室内空间", "室内（商场、写字楼）仿真构建与调试"],
+  ["训练评测", "训练与评测闭环支撑（场景选择、结果可视化、回放等）"],
 ];
 const keywords = ["三维场景", "空间仿真", "渲染与空间数据", "机器人 / 自动驾驶 / 世界模型", "训练评测闭环"];
 ---
 
 <article class="work-case" id="work" aria-labelledby="work-case-title">
-  <div class="work-case-top mono">
-    <span>CASE STUDY / 仿真</span>
-    <span>阿里巴巴 · 高德地图数据中心</span>
+  <div class="wc-band mono">
+    <span class="wc-tag"><span class="wc-dot" aria-hidden="true"></span>CASE STUDY / 仿真</span>
+    <span class="wc-org">阿里巴巴 · 高德地图数据中心</span>
   </div>
-  <h3 id="work-case-title">城市与室内空间仿真：面向机器人、自动驾驶与世界模型的训练评测闭环</h3>
-  <p class="work-case-lede">
-    负责城市街道与室内（商场、写字楼）三维场景仿真能力建设，支撑机器人、自动驾驶与世界模型的训练、仿真与评测闭环。
-  </p>
-  <p class="work-case-en" lang="en">
-    Urban-street and indoor (malls, offices) 3D scene simulation supporting training and evaluation loops for robotics, autonomous driving and world models.
-  </p>
-  <dl class="work-case-grid">
-    <div>
-      <dt>角色 <span lang="en">Role</span></dt>
-      <dd>阿里巴巴高德地图数据中心，仿真方向项目负责人。负责场景仿真相关能力的规划与落地，协同算法与工程团队打通「场景 → 训练/评测 → 反馈」链路。</dd>
+
+  <div class="wc-body">
+    <div class="wc-main">
+      <h3 id="work-case-title">
+        城市与室内空间仿真<span class="wc-colon">：</span><span class="wc-sub">面向机器人、自动驾驶与世界模型的训练评测闭环</span>
+      </h3>
+      <p class="wc-lede">
+        负责城市街道与室内（商场、写字楼）三维场景仿真能力建设，支撑机器人、自动驾驶与世界模型的训练、仿真与评测闭环。
+      </p>
+
+      <section class="wc-block wc-role">
+        <h4>角色 <span lang="en">Role</span></h4>
+        <p>阿里巴巴高德地图数据中心，<strong>仿真方向项目负责人</strong>。负责场景仿真相关能力的规划与落地，协同算法与工程团队打通「场景 → 训练/评测 → 反馈」链路。</p>
+      </section>
+
+      <section class="wc-block">
+        <h4>做了什么 <span lang="en">What</span></h4>
+        <ol class="wc-steps">
+          {doing.map(([k, d], i) => (
+            <li><span class="wc-num mono">0{i + 1}</span><span class="wc-key">{k}</span><span class="wc-desc">{d}</span></li>
+          ))}
+        </ol>
+      </section>
     </div>
-    <div>
-      <dt>做了什么 <span lang="en">What</span></dt>
-      <dd><ul>{doing.map((d) => <li>{d}</li>)}</ul></dd>
-    </div>
-    <div>
-      <dt>结果 <span lang="en">Result</span></dt>
-      <dd>已用于内部仿真训练与评测流程。</dd>
-    </div>
-  </dl>
-  <div class="tags">{keywords.map((k) => <span>{k}</span>)}</div>
-  <a class="text-link work-case-link" href="/about/">更多关于我 <span>About me ↗</span></a>
+
+    <aside class="wc-side">
+      <figure class="wc-scene" aria-hidden="true">
+        <svg viewBox="0 0 320 240" fill="none">
+          <g class="wc-grid">
+            {Array.from({ length: 9 }, (_, i) => <path d={`M${20 + i * 35} 200 L${90 + i * 35} 150`} />)}
+            {Array.from({ length: 4 }, (_, i) => <path d={`M${20 + i * 23} ${200 - i * 16.6} L${300 + i * 23} ${200 - i * 16.6}`} />)}
+          </g>
+          <g class="wc-blocks">
+            <path d="M48 178 l0 -46 l22 -15 l0 46 Z M70 117 l30 0 l0 46 l-30 0" />
+            <path d="M118 172 l0 -76 l18 -12 l0 76 Z M136 84 l26 0 l0 76 l-26 0" />
+            <path d="M190 168 l0 -34 l16 -11 l0 34 Z M206 123 l34 0 l0 34 l-34 0" />
+          </g>
+          <g class="wc-indoor">
+            <rect x="222" y="34" width="78" height="56" rx="2" />
+            <path d="M222 62 h30 M252 34 v56 M268 62 h32 M268 62 v28" />
+          </g>
+          <path class="wc-route" d="M30 196 C 90 170, 150 190, 196 150 S 250 100, 262 62" />
+          <circle class="wc-node" cx="30" cy="196" r="4" />
+          <circle class="wc-node" cx="196" cy="150" r="3.5" />
+          <circle class="wc-node wc-node-end" cx="262" cy="62" r="5" />
+        </svg>
+        <figcaption class="mono">STREET → INDOOR → TRAIN / EVAL</figcaption>
+      </figure>
+      <div class="wc-result">
+        <span class="wc-result-label mono">结果 · RESULT</span>
+        <p>已用于内部仿真训练与评测流程。</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="wc-foot">
+    <ul class="wc-chips">{keywords.map((k) => <li>{k}</li>)}</ul>
+    <a class="wc-link" href="/about/">更多关于我 <span lang="en">About me</span> <span aria-hidden="true">→</span></a>
+  </footer>
 </article>
