@@ -1024,8 +1024,8 @@ nav a[aria-current="page"] {
 
 .visit-count img {
   display: block;
-  width: 56px;
   height: 20px;
+  width: auto;
 }
 
 .page {
