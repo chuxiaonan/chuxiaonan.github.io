@@ -22,7 +22,8 @@ const { Content } = await render(post);
   type="article"
 >
   <div class="hatch" aria-hidden="true"></div>
-  <article class="article rule-top narrow" lang={post.data.lang}>
+  <div class="rule-top">
+  <article class="article narrow" lang={post.data.lang}>
     <a class="text-link back-link" href="/blog/">返回博客</a>
     <header class="article-header">
       <p class="figure-label">Figure / 笔记{post.data.draft && " / 草稿"}</p>
@@ -49,4 +50,5 @@ const { Content } = await render(post);
       <Content />
     </div>
   </article>
+  </div>
 </Base>

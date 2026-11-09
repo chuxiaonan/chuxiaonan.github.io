@@ -2,7 +2,8 @@
 import { site } from "../data/site";
 ---
 
-<section class="hero-layout wide rule-top" aria-labelledby="hero-title">
+<section class="rule-top" aria-labelledby="hero-title">
+  <div class="hero-layout wide">
   <div class="hero-copy">
     <p class="figure-label">Figure 00 / 档案</p>
     <h1 class="hero-title" id="hero-title">
@@ -44,6 +45,7 @@ import { site } from "../data/site";
     </div>
     <figcaption class="mark-caption">图版 00 / 空间<br />点 = 足迹 · 线 = 精选/当前</figcaption>
   </figure>
+  </div>
 </section>
 <script>
   const host = document.querySelector<HTMLElement>("#globe-canvas");
