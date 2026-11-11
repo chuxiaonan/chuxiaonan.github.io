@@ -1,8 +1,9 @@
-import { geoGraticule, geoInterpolate, geoOrthographic, geoPath } from "d3-geo";
+import { geoGraticule, geoOrthographic, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 // Natural Earth 110m land, TopoJSON via world-atlas. Public domain.
 import landAtlas from "../data/land-110m.json";
+import { ARC_STEPS, projectLonLat, rotateSamples, traceVisible, writeGreatCircle } from "./arc-clip";
 
 type CityKind = "hub" | "featured" | "footprint";
 
@@ -81,7 +82,6 @@ const CITIES: City[] = [
 ];
 
 const DEG = 180 / Math.PI;
-const ARC_STEPS = 48;
 
 const landTopology = landAtlas as unknown as Topology<{ land: GeometryCollection }>;
 const land = feature(landTopology, landTopology.objects.land);
@@ -100,16 +100,9 @@ function cityLabel(city: City): { title: string; coord: string } {
   };
 }
 
-function greatArc(from: [number, number], to: [number, number]): GeoJSON.LineString {
-  const interpolate = geoInterpolate(from, to);
-  const coordinates: [number, number][] = new Array(ARC_STEPS + 1);
-  for (let i = 0; i <= ARC_STEPS; i++) coordinates[i] = interpolate(i / ARC_STEPS);
-  return { type: "LineString", coordinates };
-}
+type StoredArc = { id: string; kind: CityKind; xyz: Float64Array };
 
-type StoredArc = { id: string; kind: CityKind; line: GeoJSON.LineString };
-
-/** Orthographic globe. `applyView` is the only camera update; d3-geo clips the back face. */
+/** Orthographic globe. Land is clipped by d3-geo; flight arcs end on the limb. */
 export function initGlobe(host: HTMLElement): () => void {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d", { alpha: true });
@@ -128,17 +121,16 @@ export function initGlobe(host: HTMLElement): () => void {
   const path = geoPath(projection, ctx);
   const rotate: [number, number, number] = [0, 0, 0];
   const hub = CITIES.find((city) => city.kind === "hub")!;
-  const hubLonLat: [number, number] = [hub.lon, hub.lat];
   const arcs: StoredArc[] = [];
   for (const city of CITIES) {
     if (city.kind === "hub") continue;
-    arcs.push({
-      id: city.id,
-      kind: city.kind,
-      line: greatArc(hubLonLat, [city.lon, city.lat]),
-    });
+    const xyz = new Float64Array((ARC_STEPS + 1) * 3);
+    writeGreatCircle(hub.lon, hub.lat, city.lon, city.lat, ARC_STEPS, xyz);
+    arcs.push({ id: city.id, kind: city.kind, xyz });
   }
-  const pulseLine: GeoJSON.LineString = { type: "LineString", coordinates: [] };
+  const arcVx = new Float64Array(ARC_STEPS + 1);
+  const arcVy = new Float64Array(ARC_STEPS + 1);
+  const arcVz = new Float64Array(ARC_STEPS + 1);
 
   const labelEl = document.querySelector<HTMLElement>("#globe-label");
   const labelCoord = document.querySelector<HTMLElement>("#globe-label-coord");
@@ -232,14 +224,8 @@ export function initGlobe(host: HTMLElement): () => void {
   const projectCities = () => {
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i]!;
-      const projected = projection([slot.city.lon, slot.city.lat]);
-      if (!projected) {
-        slot.front = false;
-        continue;
-      }
-      slot.x = projected[0];
-      slot.y = projected[1];
-      slot.front = true;
+      // d3's raw projection() still returns a point on the back face, inside the disk.
+      projectLonLat(slot.city.lon, slot.city.lat, yaw, pitch, cx, cy, radius, slot);
     }
   };
 
@@ -372,27 +358,45 @@ export function initGlobe(host: HTMLElement): () => void {
     ctx.globalAlpha = 1;
   };
 
-  const drawArc = (line: GeoJSON.LineString, phase: number) => {
-    ctx.globalAlpha = 0.75;
-    ctx.lineWidth = 0.9;
-    path(line);
-    ctx.stroke();
-    if (motion.matches) return;
-    const coords = line.coordinates;
-    const len = coords.length - 1;
-    const head = phase * len;
-    const span = Math.max(4, Math.floor(len * 0.1));
-    const out = pulseLine.coordinates;
-    out.length = 0;
-    for (let i = 0; i < coords.length; i++) {
-      const dist = Math.min(Math.abs(i - head), Math.abs(i - head - len), Math.abs(i - head + len));
-      if (dist <= span) out.push(coords[i] as [number, number]);
+  let arcMoved = false;
+  const arcMove = (x: number, y: number) => {
+    ctx.moveTo(x, y);
+    arcMoved = true;
+  };
+  const arcLine = (x: number, y: number) => {
+    ctx.lineTo(x, y);
+  };
+  const strokeArc = (i0: number, i1: number, alpha: number, lineWidth: number) => {
+    ctx.beginPath();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = lineWidth;
+    arcMoved = false;
+    traceVisible(arcVx, arcVy, arcVz, i0, i1, cx, cy, radius, arcMove, arcLine);
+    if (arcMoved) ctx.stroke();
+  };
+
+  /**
+   * One arc per city, always hub → that city.
+   * Featured cities keep a standing arc. A footprint arc exists only while that
+   * city is the current selection. Nothing is drawn between two other cities,
+   * and a city past the horizon cannot leave a chord across the disk.
+   */
+  const drawRoutes = () => {
+    const activeId = activeCity?.id ?? null;
+    for (let i = 0; i < arcs.length; i++) {
+      const arc = arcs[i]!;
+      const standing = arc.kind === "featured";
+      const current = activeId === arc.id;
+      if (!standing && !current) continue;
+      rotateSamples(arc.xyz, yaw, pitch, arcVx, arcVy, arcVz);
+      strokeArc(0, ARC_STEPS, 0.75, 0.9);
+      if (motion.matches) continue;
+      const head = ((animT / 10) % 1) * ARC_STEPS;
+      const span = Math.max(3, Math.floor(ARC_STEPS * 0.08));
+      const from = Math.max(0, Math.floor(head - span));
+      const to = Math.min(ARC_STEPS, Math.ceil(head + span));
+      strokeArc(from, to, 0.95, 1.15);
     }
-    if (out.length < 2) return;
-    ctx.globalAlpha = 0.95;
-    ctx.lineWidth = 1.15;
-    path(pulseLine);
-    ctx.stroke();
   };
 
   const draw = () => {
@@ -406,11 +410,13 @@ export function initGlobe(host: HTMLElement): () => void {
 
     ctx.globalAlpha = 0.32;
     ctx.lineWidth = 0.6;
+    ctx.beginPath();
     path(graticule);
     ctx.stroke();
 
     ctx.globalAlpha = 0.9;
     ctx.lineWidth = 0.85;
+    ctx.beginPath();
     path(land);
     ctx.stroke();
 
@@ -420,11 +426,7 @@ export function initGlobe(host: HTMLElement): () => void {
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    for (let i = 0; i < arcs.length; i++) {
-      const arc = arcs[i]!;
-      if (arc.kind !== "featured" && activeCity?.id !== arc.id) continue;
-      drawArc(arc.line, (animT / 10 + i * 0.13) % 1);
-    }
+    drawRoutes();
 
     projectCities();
     buildClusters();
