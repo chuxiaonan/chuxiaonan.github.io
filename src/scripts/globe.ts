@@ -171,10 +171,27 @@ export function initGlobe(host: HTMLElement): () => void {
       labelEl.style.removeProperty("transform");
       return;
     }
-    const flip = proj.x > width - 190;
     labelEl.classList.add("is-anchored");
-    labelEl.classList.toggle("is-flipped", flip);
-    labelEl.style.transform = `translate(${Math.round(proj.x + (flip ? -14 : 14))}px, ${Math.round(proj.y - 14)}px)`;
+    labelEl.classList.remove("is-flipped");
+    const cardW = labelEl.offsetWidth || 132;
+    const cardH = labelEl.offsetHeight || 36;
+    let x = proj.x + 12;
+    let y = proj.y - cardH - 10;
+    if (x + cardW > width - 6) x = proj.x - cardW - 12;
+    x = Math.max(6, Math.min(width - cardW - 6, x));
+    if (y < 6) y = proj.y + 12;
+    y = Math.max(6, Math.min(height - cardH - 6, y));
+    const edgeX = Math.max(x, Math.min(proj.x, x + cardW));
+    const edgeY = Math.max(y, Math.min(proj.y, y + cardH));
+    ctx.strokeStyle = ink;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(proj.x, proj.y);
+    ctx.lineTo(edgeX, edgeY);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    labelEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
   };
   setLabel(hub);
 
@@ -212,7 +229,7 @@ export function initGlobe(host: HTMLElement): () => void {
         origin[1] * (1 - t) + target[1] * t,
         origin[2] * (1 - t) + target[2] * t,
       ];
-      const s = (1.26 + Math.sin(Math.PI * t) * 0.22) / Math.hypot(...v);
+      const s = (1.2 + Math.sin(Math.PI * t) * 0.12) / Math.hypot(...v);
       return [v[0] * s, v[1] * s, v[2] * s];
     });
   // Every non-hub city has a path ready, but only featured arcs (plus the
@@ -242,87 +259,104 @@ export function initGlobe(host: HTMLElement): () => void {
     scale = 0,
     dpr = 1;
   // Face East Asia so the footprint cluster and Beijing sit on the front.
+  // Phase 2 can replace `project` with a d3-geo orthographic; yaw/pitch stay the camera.
   let yaw = -1.9,
-    pitch = 0.28,
+    pitch = 0.22,
     frame = 0,
     previous = 0,
     animT = 0;
   let visible = false,
     disposed = false,
     dragging = false;
-  let lastX = 0,
-    lastY = 0,
-    ink = "#161616";
+  let ink = "#161616";
   const readInk = () => {
     ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || ink;
   };
+  const monoFont = () => {
+    const stack =
+      getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim() ||
+      'ui-monospace, SFMono-Regular, Consolas, monospace';
+    return `11px ${stack}`;
+  };
   let activeCity: City | null = null;
+  let hoverCity: City | null = null;
   let pinned = false;
   let target: { yaw: number; pitch: number } | null = null;
   let projectedCities: { city: City; x: number; y: number; z: number }[] = [];
+  let pointer: { x: number; y: number } | null = null;
+  let inertia = 0;
+  let idleAt = 0;
+  const SPHERE = 1.25;
+  const CLUSTER_PX = small ? 12 : 14;
 
+  type Gesture = {
+    x: number;
+    y: number;
+    city: City | null;
+    dragged: boolean;
+    pointerId: number;
+    kind: string;
+    lastX: number;
+    lastY: number;
+    lastT: number;
+  };
+  let gesture: Gesture | null = null;
+
+  /** Screen projection. Swap this function for d3-geo in phase 2. */
   const project = ([x, y, z]: Point): Point => {
     const rx = x * Math.cos(yaw) + z * Math.sin(yaw);
     const rz = z * Math.cos(yaw) - x * Math.sin(yaw);
     const ry = y * Math.cos(pitch) - rz * Math.sin(pitch);
     const depth = y * Math.sin(pitch) + rz * Math.cos(pitch);
-    return [
-      width / 2 + (rx * Math.cos(-0.15) - ry * Math.sin(-0.15)) * scale,
-      height / 2 - (rx * Math.sin(-0.15) + ry * Math.cos(-0.15)) * scale,
-      depth,
-    ];
+    return [width / 2 + rx * scale, height / 2 - ry * scale, depth];
+  };
+
+  const limbRadius = () => SPHERE * scale;
+  const onFront = (q: Point) => {
+    if (q[2] <= 0.03) return false;
+    const dx = q[0] - width / 2;
+    const dy = q[1] - height / 2;
+    return dx * dx + dy * dy <= (limbRadius() + 0.6) ** 2;
+  };
+
+  /** One stroke per visible run, so joints do not stack alpha. Back face is omitted. */
+  const strokeFront = (points: Point[], alpha: number, lineWidth: number) => {
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = lineWidth;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    let drawing = false;
+    for (const point of points) {
+      const q = project(point);
+      if (!onFront(q)) {
+        drawing = false;
+        continue;
+      }
+      if (!drawing) ctx.moveTo(q[0], q[1]);
+      else ctx.lineTo(q[0], q[1]);
+      drawing = true;
+    }
+    ctx.stroke();
   };
 
   const strokeGrid = () => {
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 0.65;
-    for (const path of grid) {
-      for (let i = 1; i < path.length; i++) {
-        const a = project(path[i - 1]!);
-        const b = project(path[i]!);
-        ctx.globalAlpha = a[2] + b[2] > 0 ? 0.28 : 0.1;
-        ctx.beginPath();
-        ctx.moveTo(a[0], a[1]);
-        ctx.lineTo(b[0], b[1]);
-        ctx.stroke();
-      }
-    }
+    for (const path of grid) strokeFront(path, 0.38, 0.7);
   };
 
-  const strokeArcBase = (path: Point[]) => {
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 1.05;
-    for (let i = 1; i < path.length; i++) {
-      const a = project(path[i - 1]!);
-      const b = project(path[i]!);
-      const front = a[2] + b[2] > 0;
-      ctx.globalAlpha = front ? 0.45 : 0.12;
-      ctx.beginPath();
-      ctx.moveTo(a[0], a[1]);
-      ctx.lineTo(b[0], b[1]);
-      ctx.stroke();
-    }
-  };
-
-  const strokeArcPulse = (path: Point[], phase: number) => {
+  const strokeArc = (path: Point[], phase: number) => {
+    strokeFront(path, 0.72, 0.9);
     if (motion.matches) return;
     const len = path.length - 1;
     const head = phase * len;
-    const span = Math.max(4, Math.floor(len * 0.12));
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = ink;
-    for (let i = 1; i < path.length; i++) {
+    const span = Math.max(5, Math.floor(len * 0.1));
+    const pulse: Point[] = [];
+    for (let i = 0; i < path.length; i++) {
       const dist = Math.min(Math.abs(i - head), Math.abs(i - head - len), Math.abs(i - head + len));
-      if (dist > span) continue;
-      const a = project(path[i - 1]!);
-      const b = project(path[i]!);
-      if (a[2] + b[2] <= 0) continue;
-      ctx.globalAlpha = (1 - dist / span) * 0.95;
-      ctx.beginPath();
-      ctx.moveTo(a[0], a[1]);
-      ctx.lineTo(b[0], b[1]);
-      ctx.stroke();
+      if (dist <= span) pulse.push(path[i]!);
     }
+    strokeFront(pulse, 0.9, 1.15);
   };
 
   const draw = () => {
@@ -331,24 +365,24 @@ export function initGlobe(host: HTMLElement): () => void {
     ctx.clearRect(0, 0, width, height);
     strokeGrid();
 
-    const rOcean = small ? 0.75 : 0.8;
-    const rLand = small ? 0.9 : 0.95;
+    const rOcean = small ? 0.55 : 0.6;
+    const rLand = small ? 0.65 : 0.72;
+    ctx.fillStyle = ink;
     for (const { p, land } of dots) {
-      const [x, y, z] = project(p);
-      if (land) {
-        ctx.fillStyle = ink;
-        ctx.globalAlpha = z > 0 ? 0.95 : 0.2;
-        ctx.beginPath();
-        ctx.arc(x, y, rLand, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillStyle = ink;
-        ctx.globalAlpha = z > 0 ? 0.28 : 0.07;
-        ctx.beginPath();
-        ctx.arc(x, y, rOcean, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      const q = project(p);
+      if (!onFront(q)) continue;
+      ctx.globalAlpha = land ? 0.8 : 0.2;
+      ctx.beginPath();
+      ctx.arc(q[0], q[1], land ? rLand : rOcean, 0, Math.PI * 2);
+      ctx.fill();
     }
+
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, limbRadius(), 0, Math.PI * 2);
+    ctx.stroke();
 
     const arcIds: string[] = [];
     for (const city of CITIES) {
@@ -358,9 +392,7 @@ export function initGlobe(host: HTMLElement): () => void {
     arcIds.forEach((id, i) => {
       const path = arcById.get(id);
       if (!path) return;
-      strokeArcBase(path);
-      const phase = (animT / 10 + i * 0.13) % 1;
-      strokeArcPulse(path, phase);
+      strokeArc(path, (animT / 10 + i * 0.13) % 1);
     });
 
     projectedCities = cityPoints.map(({ city, p }) => {
@@ -368,52 +400,49 @@ export function initGlobe(host: HTMLElement): () => void {
       return { city, x, y, z };
     });
 
+    const clusters = footprintClusters();
+    const hidden = new Set<string>();
+    for (const cluster of clusters) {
+      if (cluster.members.length < 3 || clusterOpen(cluster)) continue;
+      for (const member of cluster.members) hidden.add(member.city.id);
+      ctx.strokeStyle = ink;
+      ctx.globalAlpha = 0.8;
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.arc(cluster.x, cluster.y, small ? 4.5 : 5.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(cluster.x, cluster.y, 1.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     const ordered = [...projectedCities].sort((a, b) => {
       const rank = (kind: CityKind) => (kind === "hub" ? 2 : kind === "featured" ? 1 : 0);
       return rank(a.city.kind) - rank(b.city.kind);
     });
     for (const { city, x, y, z } of ordered) {
-      if (z < -0.05) continue;
+      if (hidden.has(city.id) || !onFront(project(cityPoints.find((c) => c.city.id === city.id)!.p))) continue;
+      if (z <= 0.03) continue;
       const active = activeCity?.id === city.id;
       const hubCity = city.kind === "hub";
-      const front = z > 0;
-      const core = hubCity ? (small ? 3.4 : 4.2) : active ? (small ? 2.6 : 3) : small ? 1.8 : 2.15;
-      const pulse = hubCity && !motion.matches ? 0.5 + 0.5 * Math.sin(animT * 1.3) : 0;
-      const glow = hubCity ? core * 2.6 + pulse * 3.2 : core * 2.4;
+      const core = hubCity ? (small ? 2.2 : 2.6) : city.kind === "featured" ? (small ? 1.5 : 1.7) : small ? 1.05 : 1.2;
       ctx.fillStyle = ink;
-      ctx.globalAlpha = front ? (hubCity ? 0.34 + pulse * 0.28 : active ? 0.5 : 0.34) : 0.1;
+      ctx.globalAlpha = active ? 1 : 0.92;
       ctx.beginPath();
-      ctx.arc(x, y, glow, 0, Math.PI * 2);
+      ctx.arc(x, y, active ? core + 0.6 : core, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = ink;
-      ctx.globalAlpha = front ? 0.95 : 0.28;
-      ctx.beginPath();
-      ctx.arc(x, y, core, 0, Math.PI * 2);
-      ctx.fill();
+      if (hubCity) {
+        const pulse = motion.matches ? 0 : 0.5 + 0.5 * Math.sin(animT * 1.3);
+        ctx.globalAlpha = 0.35 + pulse * 0.25;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(x, y, core + 2.4 + pulse * 1.2, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
 
-    ctx.font = '13px "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif';
-    ctx.textBaseline = "bottom";
-    ctx.textAlign = "left";
-    const labelCandidates: { x: number; y: number; z: number; text: string }[] = [];
-    for (const { city, x, y, z } of projectedCities) {
-      if (city.kind === "footprint") continue;
-      if (city.kind === "hub" && (!activeCity || activeCity.id === hub.id)) continue;
-      if (z < 0.35) continue;
-      if (activeCity?.id === city.id) continue;
-      if (x < 4 || x > width - 48 || y < 18 || y > height - 6) continue;
-      labelCandidates.push({ x: x + 8, y: y - 6, z, text: city.nameZh });
-    }
-    labelCandidates.sort((a, b) => b.z - a.z);
-    const placed: { x: number; y: number }[] = [];
-    ctx.fillStyle = ink;
-    for (const label of labelCandidates) {
-      if (placed.some((p) => Math.hypot(p.x - label.x, p.y - label.y) < 46)) continue;
-      placed.push(label);
-      ctx.globalAlpha = 0.9;
-      ctx.fillText(label.text, label.x, label.y);
-    }
-    ctx.globalAlpha = 1;
+    drawCityLabels(hidden);
 
     // Reposition keyboard/pointer hit targets
     for (const { city, btn } of hits) {
@@ -427,28 +456,155 @@ export function initGlobe(host: HTMLElement): () => void {
     placeLabel();
   };
 
-  const pickCity = (clientX: number, clientY: number): City | null => {
+  type Cluster = { members: typeof projectedCities; x: number; y: number };
+
+  const footprintClusters = (): Cluster[] => {
+    const seeds = projectedCities.filter((c) => c.city.kind === "footprint" && c.z > 0.08);
+    const used = new Set<string>();
+    const clusters: Cluster[] = [];
+    for (const seed of seeds) {
+      if (used.has(seed.city.id)) continue;
+      const members = [seed];
+      used.add(seed.city.id);
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (const other of seeds) {
+          if (used.has(other.city.id)) continue;
+          if (members.some((m) => Math.hypot(m.x - other.x, m.y - other.y) < CLUSTER_PX)) {
+            members.push(other);
+            used.add(other.city.id);
+            grew = true;
+          }
+        }
+      }
+      clusters.push({
+        members,
+        x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
+        y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
+      });
+    }
+    return clusters;
+  };
+
+  const clusterOpen = (cluster: Cluster) => {
+    if (cluster.members.some((m) => m.city.id === activeCity?.id || m.city.id === hoverCity?.id)) return true;
+    if (!pointer) return false;
+    return Math.hypot(pointer.x - cluster.x, pointer.y - cluster.y) < CLUSTER_PX + 10;
+  };
+
+  const drawCityLabels = (hidden: Set<string>) => {
+    ctx.font = monoFont();
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = ink;
+    const placed: { x: number; y: number }[] = [];
+    const labels = projectedCities
+      .filter((c) => c.city.kind === "featured" && !hidden.has(c.city.id) && c.z > 0.35 && c.city.id !== activeCity?.id)
+      .sort((a, b) => b.z - a.z);
+    for (const { city, x, y } of labels) {
+      const text = city.nameZh;
+      const textWidth = ctx.measureText(text).width;
+      let lx = x + 8;
+      let ly = y;
+      if (lx + textWidth > width - 6) lx = x - 8 - textWidth;
+      if (lx < 4) lx = 4;
+      ly = Math.max(8, Math.min(height - 8, ly));
+      if (placed.some((p) => Math.hypot(p.x - lx, p.y - ly) < textWidth)) continue;
+      placed.push({ x: lx, y: ly });
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(lx < x ? lx + textWidth : lx, ly);
+      ctx.stroke();
+      ctx.globalAlpha = 0.88;
+      ctx.fillText(text, lx, ly);
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  const canvasPoint = (clientX: number, clientY: number) => {
     const rect = canvas.getBoundingClientRect();
-    const x = ((clientX - rect.left) / rect.width) * width;
-    const y = ((clientY - rect.top) / rect.height) * height;
+    return {
+      x: ((clientX - rect.left) / rect.width) * width,
+      y: ((clientY - rect.top) / rect.height) * height,
+    };
+  };
+
+  const hiddenIds = () => {
+    const hidden = new Set<string>();
+    for (const cluster of footprintClusters()) {
+      if (cluster.members.length < 3 || clusterOpen(cluster)) continue;
+      for (const member of cluster.members) hidden.add(member.city.id);
+    }
+    return hidden;
+  };
+
+  const pickCityAt = (x: number, y: number): City | null => {
+    const hidden = hiddenIds();
     let best: City | null = null;
-    let bestDist = 16;
+    let bestDist = 13;
     for (const c of projectedCities) {
-      if (c.z < 0) continue;
+      if (c.z <= 0.03 || hidden.has(c.city.id)) continue;
       const d = Math.hypot(c.x - x, c.y - y);
       if (d < bestDist) {
         bestDist = d;
         best = c.city;
       }
     }
-    return best;
+    if (hoverCity && !hidden.has(hoverCity.id)) {
+      const current = projectedCities.find((c) => c.city.id === hoverCity!.id && c.z > 0.03);
+      if (current) {
+        const d = Math.hypot(current.x - x, current.y - y);
+        if (d < 20 && (!best || d < bestDist * 1.45)) return hoverCity;
+      }
+    }
+    if (best) return best;
+    for (const cluster of footprintClusters()) {
+      if (cluster.members.length < 3 || clusterOpen(cluster)) continue;
+      if (Math.hypot(cluster.x - x, cluster.y - y) > 8) continue;
+      let nearest = cluster.members[0]!;
+      let nearestDist = Infinity;
+      for (const member of cluster.members) {
+        const d = Math.hypot(member.x - x, member.y - y);
+        if (d < nearestDist) {
+          nearest = member;
+          nearestDist = d;
+        }
+      }
+      return nearest.city;
+    }
+    return null;
   };
 
   const activate = (city: City | null) => {
+    if (city?.id === activeCity?.id) {
+      hoverCity = city;
+      host.style.cursor = city ? "pointer" : dragging ? "grabbing" : "grab";
+      return;
+    }
     activeCity = city;
+    hoverCity = city;
     setLabel(city ?? hub);
     host.style.cursor = city ? "pointer" : dragging ? "grabbing" : "grab";
     draw();
+  };
+
+  const flyTo = (city: City) => {
+    const nextPitch = Math.max(-0.7, Math.min(0.7, city.lat * radians));
+    target = { yaw: -city.lon * radians, pitch: nextPitch };
+    inertia = 0;
+    pinned = true;
+    idleAt = performance.now() + 4500;
+    if (motion.matches) {
+      yaw = target.yaw;
+      pitch = target.pitch;
+      target = null;
+    }
+    activate(city);
+    resume();
   };
 
   const render = (time: number) => {
@@ -456,6 +612,7 @@ export function initGlobe(host: HTMLElement): () => void {
     if (disposed || !visible || document.hidden) return;
     const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
     previous = time;
+    const now = performance.now();
     if (target) {
       const k = motion.matches ? 1 : 1 - Math.exp(-delta * 6);
       let dy = target.yaw - yaw;
@@ -463,12 +620,17 @@ export function initGlobe(host: HTMLElement): () => void {
       yaw += dy * k;
       pitch += (target.pitch - pitch) * k;
       if (Math.abs(dy) < 0.002 && Math.abs(target.pitch - pitch) < 0.002) target = null;
-    } else if (!motion.matches) {
-      if (!dragging && !activeCity) yaw += delta * 0.05;
+    } else if (!dragging && inertia && !motion.matches) {
+      yaw += inertia;
+      inertia *= Math.exp(-delta * 3.4);
+      if (Math.abs(inertia) < 0.00035) inertia = 0;
+    } else if (!motion.matches && !dragging && !pinned && !activeCity && now > idleAt) {
+      yaw += delta * 0.045;
     }
     if (!motion.matches) animT += delta;
     draw();
-    if (!motion.matches || activeCity || target) frame = requestAnimationFrame(render);
+    const busy = Boolean(dragging || inertia || target || (!motion.matches && now > idleAt));
+    if (busy || activeCity || !motion.matches) frame = requestAnimationFrame(render);
   };
   const resume = () => {
     if (!frame && visible && !document.hidden && !disposed) frame = requestAnimationFrame(render);
@@ -483,7 +645,7 @@ export function initGlobe(host: HTMLElement): () => void {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
-    scale = Math.max(0, (Math.min(width, height) * 0.46) / 1.5);
+    scale = Math.max(0, (Math.min(width, height) * 0.42) / SPHERE);
     draw();
     resume();
   });
@@ -508,58 +670,119 @@ export function initGlobe(host: HTMLElement): () => void {
     resume();
   };
 
+  const DRAG_PX = 6;
+
   const down = (e: PointerEvent) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    const hit = pickCity(e.clientX, e.clientY);
-    if (e.pointerType !== "mouse") pinned = !!hit;
-    if (hit) {
-      activate(hit);
-      return;
-    }
-    if (pinned === false && activeCity && e.pointerType !== "mouse") activate(null);
-    if (motion.matches) return;
-    dragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    host.setPointerCapture(e.pointerId);
-    host.style.cursor = "grabbing";
+    const at = canvasPoint(e.clientX, e.clientY);
+    pointer = at;
+    gesture = {
+      x: e.clientX,
+      y: e.clientY,
+      city: pickCityAt(at.x, at.y),
+      dragged: false,
+      pointerId: e.pointerId,
+      kind: e.pointerType,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      lastT: performance.now(),
+    };
+    inertia = 0;
+    idleAt = performance.now() + 4500;
   };
   const move = (e: PointerEvent) => {
-    if (dragging && !motion.matches) {
-      yaw += (e.clientX - lastX) * 0.005;
-      pitch = Math.max(-1.1, Math.min(1.1, pitch + (e.clientY - lastY) * 0.005));
-      lastX = e.clientX;
-      lastY = e.clientY;
+    const at = canvasPoint(e.clientX, e.clientY);
+    if (gesture && gesture.pointerId === e.pointerId) {
+      const dx = e.clientX - gesture.x;
+      const dy = e.clientY - gesture.y;
+      const travel = Math.hypot(dx, dy);
+      if (!gesture.dragged && travel > DRAG_PX) {
+        const vertical = gesture.kind === "touch" && Math.abs(dy) > Math.abs(dx);
+        if (vertical) {
+          gesture = null;
+          dragging = false;
+          return;
+        }
+        gesture.dragged = true;
+        dragging = true;
+        pinned = false;
+        if (gesture.kind !== "touch") {
+          try {
+            host.setPointerCapture(e.pointerId);
+          } catch {
+            /* Pointer may already be released. */
+          }
+        }
+        host.style.cursor = "grabbing";
+      }
+      if (dragging && gesture) {
+        const stepX = e.clientX - gesture.lastX;
+        const stepY = e.clientY - gesture.lastY;
+        const dt = Math.max(16, performance.now() - gesture.lastT);
+        yaw += stepX * 0.005;
+        if (gesture.kind !== "touch") {
+          pitch = Math.max(-0.2, Math.min(0.6, pitch + stepY * 0.0035));
+        }
+        if (!motion.matches) inertia = (stepX * 0.005) / (dt / 16);
+        gesture.lastX = e.clientX;
+        gesture.lastY = e.clientY;
+        gesture.lastT = performance.now();
+        idleAt = performance.now() + 4500;
+        resume();
+        return;
+      }
+      return;
+    }
+    if (gesture?.dragged || dragging) return;
+    if (e.pointerType !== "mouse") return;
+    pointer = at;
+    if (pinned) {
+      draw();
+      return;
+    }
+    activate(pickCityAt(at.x, at.y));
+    draw();
+  };
+  const up = (e: PointerEvent) => {
+    const current = gesture;
+    if (current && e.pointerId !== current.pointerId) return;
+    const wasDrag = Boolean(current?.dragged && dragging);
+    const city = current && !current.dragged ? current.city : null;
+    gesture = null;
+    dragging = false;
+    if (city) {
+      flyTo(city);
+      return;
+    }
+    if (wasDrag) {
+      if (motion.matches) inertia = 0;
+      idleAt = performance.now() + 4500;
+      host.style.cursor = activeCity ? "pointer" : "grab";
       resume();
       return;
     }
-    if (pinned || e.pointerType !== "mouse") return;
-    activate(pickCity(e.clientX, e.clientY));
-  };
-  const up = () => {
-    dragging = false;
+    if (current && !current.city) {
+      pinned = false;
+      hoverCity = null;
+      activate(null);
+    }
     host.style.cursor = activeCity ? "pointer" : "grab";
   };
   const leave = () => {
-    if (!dragging && !pinned) activate(null);
+    if (dragging || pinned) return;
+    pointer = null;
+    hoverCity = null;
+    activate(null);
   };
 
   for (const { city, btn } of hits) {
     btn.addEventListener("focus", () => {
-      target = {
-        yaw: -city.lon * radians,
-        pitch: Math.max(-1.1, Math.min(1.1, city.lat * radians)),
-      };
-      if (motion.matches) {
-        yaw = target.yaw;
-        pitch = target.pitch;
-        target = null;
-      }
-      activate(city);
-      resume();
+      flyTo(city);
     });
     btn.addEventListener("blur", () => {
       if (document.activeElement && hits.some((h) => h.btn === document.activeElement)) return;
+      pinned = false;
+      hoverCity = null;
       activate(null);
     });
     btn.addEventListener("pointerenter", () => activate(city));
