@@ -1192,6 +1192,11 @@ nav a[aria-current="page"] {
     order: -1;
   }
 
+  .globe-frame {
+    border: 0;
+    background: transparent;
+  }
+
   .globe-stage {
     height: 380px;
     min-height: 320px;
