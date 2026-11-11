@@ -351,12 +351,23 @@ export function initGlobe(host: HTMLElement): () => void {
     const len = path.length - 1;
     const head = phase * len;
     const span = Math.max(5, Math.floor(len * 0.1));
-    const pulse: Point[] = [];
+    // The highlight wraps with `phase`, so one window can include samples
+    // from both ends of the arc. Those runs are not adjacent; stroking them
+    // as a single polyline joins the ends with a chord across the disk.
+    let run: Point[] = [];
+    let prev = -2;
+    const flush = () => {
+      if (run.length > 1) strokeFront(run, 0.9, 1.15);
+      run = [];
+    };
     for (let i = 0; i < path.length; i++) {
       const dist = Math.min(Math.abs(i - head), Math.abs(i - head - len), Math.abs(i - head + len));
-      if (dist <= span) pulse.push(path[i]!);
+      if (dist > span) continue;
+      if (i !== prev + 1) flush();
+      run.push(path[i]!);
+      prev = i;
     }
-    strokeFront(pulse, 0.9, 1.15);
+    flush();
   };
 
   const draw = () => {
